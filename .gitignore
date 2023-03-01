@@ -1,0 +1,16 @@
+.ipynb_checkpoints/
+.nfs*
+data/
+*.pyc
+*.scratch
+usleep-pytorch/lightning_logs/
+*.hdf5
+*.mat
+*.txt
+*.pyc
+**/*.ipynb_checkpoints/
+.ipynb_checkpoints
+lseqsleepnet-pytorch/datasets/
+lseqsleepnet-pytorch/lightning_logs/
+lseqsleepnet-pytorch/spectrograms/
+lseqsleepnet-pytorch/preprocessing/dcsmspectro
