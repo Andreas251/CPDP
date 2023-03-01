@@ -6,6 +6,11 @@ import pyarrow.parquet as pq
 from pathlib import Path
 from h5py import File
 
+# TODO
+# We should have a list_records file which returns a list of object. An object contains paths to needed files
+# port_data must only call read_psg for each object in list
+# read_psg implements how to get x and y based on object given
+
 
 class SleepdataPipeline(ABC):
     def __init__(self, max_num_records, dataset_path, output_path, port_on_init=True, data_format="hdf5"):
@@ -57,7 +62,7 @@ class SleepdataPipeline(ABC):
         pass
     
     
-    def channel_mapping(self):
+    def channel_mapping(self): # TODO: Maybe this should be abstract and implemented for each dataset?
         """
         Function for mapping to new channel name in following format: 
         {channel type}_{electrode 1}-{electrode 2}
@@ -78,7 +83,17 @@ class SleepdataPipeline(ABC):
             "F3-M2": "EEG_F3-M2",
             "F4-M1": "EEG_F4-M1",
             "O1-M2": "EEG_O1-M2",
-            "O2-M1": "EEG_O2-M1"
+            "O2-M1": "EEG_O2-M1",
+            "F3": "EEG_F3-Fpz", # TODO: Could this cause issues later?
+            "F4": "EEG_F4-Fpz", #
+            "C3": "EEG_C3-Fpz", #
+            "C4": "EEG_C4-Fpz", #
+            "O1": "EEG_O1-Fpz", #
+            "O2": "EEG_O2-Fpz", #
+            "M1": "EEG_M1-Fpz", #
+            "M2": "EEG_M2-Fpz", #
+            "E1": "EOG_E1-Fpz", #
+            "E2": "EOG_E2-Fpz", # ------------------------------------
         }
     
     
