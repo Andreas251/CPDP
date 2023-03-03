@@ -5,16 +5,22 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 from pathlib import Path
 from h5py import File
+from enum import Enum, auto, IntEnum
 
 # TODO
-# We should have a list_records file which returns a list of object. An object contains paths to needed files
-# port_data must only call read_psg for each object in list
-# read_psg implements how to get x and y based on object given
-
+# Fix sedf
+# Fix dcsm
 
 class SleepdataPipeline(ABC):
-    def __init__(self, max_num_records, dataset_path, output_path, port_on_init=True, data_format="hdf5"):
-        self.max_num_records = max_num_records
+    def __init__(
+        self, 
+        max_num_subjects, 
+        dataset_path, 
+        output_path, 
+        port_on_init=True, 
+        data_format="hdf5"
+    ):
+        self.max_num_subjects = max_num_subjects
         self.dataset_path = dataset_path
         self.output_path = output_path
         
@@ -27,12 +33,48 @@ class SleepdataPipeline(ABC):
             exit(1)
         
         if port_on_init:
-            self.port_data(write_function=self.write_function)
+            paths_dict = self.list_records(basepath=self.dataset_path)
+            self.port_data(write_function=self.write_function, paths_dict=paths_dict)
+            
+    class Labels(IntEnum):
+        Wake = 0
+        N1 = 1
+        N2 = 2
+        N3 = 3
+        REM = 4
         
+    class TTRef(Enum):
+        Fp1 = auto()
+        Fp2 = auto()
+        F7 = auto()
+        F3 = auto()
+        Fz = auto()
+        F4 = auto()
+        F8 = auto()
+        A1 = auto()
+        T3 = auto()
+        C3 = auto()
+        Cz = auto()
+        C4 = auto()
+        T4 = auto()
+        A2 = auto()
+        T5 = auto()
+        P3 = auto()
+        Pz = auto()
+        P4 = auto()
+        T6 = auto()
+        O1 = auto()
+        O2 = auto()
+        EL = auto()
+        ER = auto()
+
+        def __str__(self):
+            return self.name
+    
     
     @property
     @abstractmethod
-    def sleep_stage_dict(self):
+    def label_mapping(self):
         pass
     
     
@@ -49,19 +91,28 @@ class SleepdataPipeline(ABC):
     
     
     @abstractmethod
-    def read_psg(self, record_path):
+    def list_records(self):
+        """
+        Function to list needed information about original dataset structure, in order for read_psg to have needed information about where to find PSGs and hypnograms.
+        
+        Return
+        paths_dict: A dictionary containing a key for each subject. Each subject has a list of record paths in the form of a tuple i.e a path for PSG and a path for hypnogram.
+        """
+        pass
+    
+    
+    @abstractmethod
+    def read_psg(self, record):
         """
         Function to read PSG data along with labels. Data can be in the format of HDF, EDF and so on.
         
         Returns 
         x: A dictionary of data from available PSG channels for a record in the dataset. Data channels must contain data at sample rate 128 Hz. Dictionary keys must be prepended with either "EEG " or "EOG " depending on type of channel.
         y: A list of labels for 30 second data chunks for all records in dataset.
-        subject_number: Number of subject from dataset.
-        record_number: Number of record for given subject
         """
         pass
     
-    
+    @abstractmethod
     def channel_mapping(self): # TODO: Maybe this should be abstract and implemented for each dataset?
         """
         Function for mapping to new channel name in following format: 
@@ -72,33 +123,41 @@ class SleepdataPipeline(ABC):
         https://en.wikipedia.org/wiki/10%E2%80%9320_system_(EEG)
         
         """
-        return {
-            "EOG horizontal": "EOG_E1-E2", 
-            "EEG Fpz-Cz": "EEG_Fpz-Cz",
-            "EEG Pz-Oz": "EEG_Pz-Oz",
-            "E1-M2": "EOG_E1-M2",
-            "E2-M2": "EOG_E2-M2",
-            "C3-M2": "EEG_C3-M2",
-            "C4-M1": "EEG_C4-M1",
-            "F3-M2": "EEG_F3-M2",
-            "F4-M1": "EEG_F4-M1",
-            "O1-M2": "EEG_O1-M2",
-            "O2-M1": "EEG_O2-M1",
-            "F3": "EEG_F3-Fpz", # TODO: Could this cause issues later?
-            "F4": "EEG_F4-Fpz", #
-            "C3": "EEG_C3-Fpz", #
-            "C4": "EEG_C4-Fpz", #
-            "O1": "EEG_O1-Fpz", #
-            "O2": "EEG_O2-Fpz", #
-            "M1": "EEG_M1-Fpz", #
-            "M2": "EEG_M2-Fpz", #
-            "E1": "EOG_E1-Fpz", #
-            "E2": "EOG_E2-Fpz", # ------------------------------------
-        }
+        pass
+    
+    def __mapping(self,ctype, ref1, ref2):
+        return '{t}_{r1}-{r2}'.format(t=ctype,
+                                      r1=ref1,
+                                      r2=ref2)
+    
+    def __map_channels(self, dic):
+        print("Remapping")
+        new_dict = dict()
+        
+        for key in dic.keys():
+            mapping = self.channel_mapping()
+            
+            try:
+                chnl = mapping[key]
+            except KeyError:
+                continue
+                
+            ref1 = chnl['ref1']
+            ref2 = chnl['ref2']
+            
+            ctype = 'EOG' if ref1 in [self.TTRef.EL,
+                                      self.TTRef.ER] else 'EEG'
+            
+            new_key = self.__mapping(ctype, ref1, ref2)
+            new_dict[new_key] = dic[key]
+            
+        print(new_dict.keys())
+        return new_dict
     
     
-    def relevant_channels(self):
-        return self.channel_mapping().keys()
+    def __map_labels(self, labels):
+        print(labels)
+        return list(map(lambda x: self.label_mapping()[x], labels))
     
     
     def resample_channel(self, channel, input_rate, output_rate=128):
@@ -148,25 +207,27 @@ class SleepdataPipeline(ABC):
             for channel_name, channel_data in x.items():
                 subsubgrp_psg.create_dataset(channel_name, data=channel_data)
             
+            print(y)
             subgrp_record.create_dataset("hypnogram", data=y)
         
         
-    def port_data(self, write_function):
-        record_dirs = os.listdir(self.dataset_path)
-        
-        if self.max_num_records:
-            record_dirs = record_dirs[:self.max_num_records]
-        
-        for record_dir in record_dirs:
-            record_path = self.dataset_path + record_dir + "/"
+    def port_data(self, write_function, paths_dict): # TODO: Test
+        for subject_number in list(paths_dict.keys())[:self.max_num_subjects]:
+            record_number = 0
             
-            x, y, subject_number, record_number = self.read_psg(record_path)
-            
-            write_function(
-                f"{self.output_path}/",
-                subject_number,
-                record_number,
-                x, 
-                y
-            ) 
-        
+            for record in paths_dict[subject_number]:
+                x, y = self.read_psg(record)
+    
+                x = self.__map_channels(x)
+                y = self.__map_labels(y)
+         
+                write_function(
+                    f"{self.output_path}/",
+                    subject_number,
+                    record_number,
+                    x, 
+                    y
+                )
+                
+                record_number = record_number + 1
+  

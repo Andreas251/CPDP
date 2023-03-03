@@ -2,23 +2,18 @@ import os
 import mne
 import sys
 
-from .base import SleepdataPipeline
+from .sdo_base import SleepdataOrg
 
 
-class Chat(SleepdataPipeline):
+class Chat(SleepdataOrg):
     """
     ABOUT THIS DATASET 
     
     Channels included in dataset: ['Airflow', 'CannulaFlow', 'SUM', 'Chest', 'ABD', 'Snore', 'M1', 'M2', 'C3', 'C4', 'O1', 'O2', 'F3', 'F4', 'T3', 'T4', 'E1', 'E2', 'ECG1', 'ECG2', 'Lchin', 'Rchin', 'Cchin', 'ECG3', 'Lleg1', 'Lleg2', 'Rleg1', 'Rleg2', 'SAO2Nellcor', 'PulseNellcor', 'PlethNellcor', 'EtCO2', 'Cap', 'RR', 'SaO2', 'Pulse', 'Position', 'DHR']
-.
+
     
     EEG and EOG signals were each sampled at 200Hz.
-    """
-    def sleep_stage_dict(self):
-        return {
-            "W": 0
-        }
-  
+    """  
     def sample_rate(self):
         return 200
         
@@ -26,19 +21,24 @@ class Chat(SleepdataPipeline):
     def dataset_name(self):
         return "chat"
     
+    def label_mapping(self):
+        raise NotImplementedError
     
-    def read_psg(self, record_path):
-        print(record_path)
-        record_dir = os.listdir(record_path)
-        print(record_dir)
-        
-        path_to_psg = record_path + "edfs/baseline/chat-baseline-300001.edf"
-        
-        
-        data = mne.io.read_raw_edf(path_to_psg)
-        print(data.ch_names)
-        
-        
-        
-        sys.exit()
+    def channel_mapping(self):
+        r2 = self.TTRef.Fz
+
+        return {
+            "M1": {'ref1': self.TTRef.A1, 'ref2': r2},
+            "M2": {'ref1': self.TTRef.A2, 'ref2': r2},
+            "C3": {'ref1': self.TTRef.C3, 'ref2': r2},
+            "C4": {'ref1': self.TTRef.C4, 'ref2': r2},
+            "O1": {'ref1': self.TTRef.O1, 'ref2': r2},
+            "O2": {'ref1': self.TTRef.O2, 'ref2': r2},
+            "F3": {'ref1': self.TTRef.F3, 'ref2': r2},
+            "F4": {'ref1': self.TTRef.F4, 'ref2': r2},
+            "T3": {'ref1': self.TTRef.T3, 'ref2': r2},
+            "T4": {'ref1': self.TTRef.T4, 'ref2': r2},
+            "E1": {'ref1': self.TTRef.EL, 'ref2': r2},
+            "E2": {'ref1': self.TTRef.ER, 'ref2': r2},
+        }
         

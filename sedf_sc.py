@@ -35,7 +35,15 @@ class Sedf_SC(SleepdataPipeline):
         
         
     def dataset_name(self):
-        return "sedf_sc"    
+        return "sedf_sc"
+    
+    
+    def channel_mapping(self):
+        return {
+            "EOG horizontal": "EOG_E1-E2", 
+            "EEG Fpz-Cz": "EEG_Fpz-Cz",
+            "EEG Pz-Oz": "EEG_Pz-Oz"
+        }
     
     
     def read_psg(self, record_path):

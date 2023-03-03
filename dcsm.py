@@ -29,6 +29,19 @@ class Dcsm(SleepdataPipeline):
         return "dcsm"
     
     
+    def channel_mapping(self):
+        return {
+            "E1-M2": "EOG_E1-M2",
+            "E2-M2": "EOG_E2-M2",
+            "C3-M2": "EEG_C3-M2",
+            "C4-M1": "EEG_C4-M1",
+            "F3-M2": "EEG_F3-M2",
+            "F4-M1": "EEG_F4-M1",
+            "O1-M2": "EEG_O1-M2",
+            "O2-M1": "EEG_O2-M1"
+        }
+    
+    
     def read_psg(self, record_path):
         record_dir = os.listdir(record_path)
         
