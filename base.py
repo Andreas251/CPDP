@@ -9,7 +9,6 @@ from enum import Enum, auto, IntEnum
 
 # TODO
 # Fix sedf
-# Fix dcsm
 
 class SleepdataPipeline(ABC):
     def __init__(
@@ -113,7 +112,7 @@ class SleepdataPipeline(ABC):
         pass
     
     @abstractmethod
-    def channel_mapping(self): # TODO: Maybe this should be abstract and implemented for each dataset?
+    def channel_mapping(self):
         """
         Function for mapping to new channel name in following format: 
         {channel type}_{electrode 1}-{electrode 2}
@@ -131,7 +130,6 @@ class SleepdataPipeline(ABC):
                                       r2=ref2)
     
     def __map_channels(self, dic):
-        print("Remapping")
         new_dict = dict()
         
         for key in dic.keys():
@@ -149,18 +147,16 @@ class SleepdataPipeline(ABC):
                                       self.TTRef.ER] else 'EEG'
             
             new_key = self.__mapping(ctype, ref1, ref2)
-            new_dict[new_key] = dic[key]
+            new_dict[new_key] = self.resample_channel(dic[key]) # TODO: Test that resampling works
             
-        print(new_dict.keys())
         return new_dict
     
     
     def __map_labels(self, labels):
-        print(labels)
         return list(map(lambda x: self.label_mapping()[x], labels))
     
     
-    def resample_channel(self, channel, input_rate, output_rate=128):
+    def resample_channel(self, channel, output_rate=128):
         """
         Function to resample a single data channel to the desired sample rate.
         
@@ -170,7 +166,7 @@ class SleepdataPipeline(ABC):
         channel_resampled = resample_poly(
             channel,
             output_rate,
-            input_rate,
+            self.sample_rate(),
             axis=0
         )
 
@@ -207,7 +203,6 @@ class SleepdataPipeline(ABC):
             for channel_name, channel_data in x.items():
                 subsubgrp_psg.create_dataset(channel_name, data=channel_data)
             
-            print(y)
             subgrp_record.create_dataset("hypnogram", data=y)
         
         

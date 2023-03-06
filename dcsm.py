@@ -12,15 +12,16 @@ class Dcsm(SleepdataPipeline):
     
     EEG and EOG signals were each sampled at 256Hz.
     """
-    def sleep_stage_dict(self):
+    def label_mapping(self):
         return {
-            "W": 0,
-            "N1": 1,
-            "N2": 2,
-            "N3": 3,
-            "REM": 4
+            "W": self.Labels.Wake,
+            "N1": self.Labels.N1,
+            "N2": self.Labels.N2,
+            "N3": self.Labels.N3,
+            "REM": self.Labels.REM
         }
   
+
     def sample_rate(self):
         return 256
         
@@ -31,64 +32,58 @@ class Dcsm(SleepdataPipeline):
     
     def channel_mapping(self):
         return {
-            "E1-M2": "EOG_E1-M2",
-            "E2-M2": "EOG_E2-M2",
-            "C3-M2": "EEG_C3-M2",
-            "C4-M1": "EEG_C4-M1",
-            "F3-M2": "EEG_F3-M2",
-            "F4-M1": "EEG_F4-M1",
-            "O1-M2": "EEG_O1-M2",
-            "O2-M1": "EEG_O2-M1"
+            "E1-M2": {'ref1': self.TTRef.EL, 'ref2': self.TTRef.A2},
+            "E2-M2": {'ref1': self.TTRef.ER, 'ref2': self.TTRef.A2},
+            "C3-M2": {'ref1': self.TTRef.C3, 'ref2': self.TTRef.A2},
+            "C4-M1": {'ref1': self.TTRef.C4, 'ref2': self.TTRef.A1},
+            "F3-M2": {'ref1': self.TTRef.F3, 'ref2': self.TTRef.A2},
+            "F4-M1": {'ref1': self.TTRef.F4, 'ref2': self.TTRef.A1},
+            "O1-M2": {'ref1': self.TTRef.O1, 'ref2': self.TTRef.A2},
+            "O2-M1": {'ref1': self.TTRef.O2, 'ref2': self.TTRef.A1}
         }
     
     
-    def read_psg(self, record_path):
-        record_dir = os.listdir(record_path)
+    def list_records(self, basepath):
+        paths_dict = {}
         
-        assert len(record_dir) == 2 # A record must contain only one PSG and one Hypnogram
+        record_paths = os.listdir(basepath)
         
-        psg_filename = [s for s in record_dir if "psg.h5".lower() in s.lower()][0]
-        hyp_filename = [s for s in record_dir if "hypnogram.ids".lower() in s.lower()][0]
+        for path in record_paths:
+            record_path = f"{basepath}{path}"
+            psg_path = f"{record_path}/psg.h5"
+            hyp_path = f"{record_path}/hypnogram.ids"
+            paths_dict[path] = [(psg_path, hyp_path)]
         
-        path_to_psg = record_path + psg_filename
-        path_to_hypnogram = record_path + hyp_filename
+        return paths_dict
+    
+    
+    def read_psg(self, record):
+        psg_path, hyp_path = record
         
-        subject_number = record_path.split("/")[-2]
-        record_number = "00" # There is only a single record per subject
+        x = dict()
+        y = []
         
-        with File(path_to_psg, "r") as h5:
-            x = dict()
-
+        with File(psg_path, "r") as h5:
             h5channels = h5.get("channels")
             
-            for channel in self.relevant_channels():
-                if channel in h5channels.keys():
-                    channel_data = h5channels[channel][:]
-
-                    channel_data_resampled = self.resample_channel(
-                        channel_data, 
-                        input_rate=self.sample_rate()
-                    )
-
-                    x[self.channel_mapping()[channel]] = channel_data_resampled
+            for channel in self.channel_mapping().keys():
+                channel_data = h5channels[channel][:]
                 
-        with open(path_to_hypnogram) as f:
+                x[channel] = channel_data
+        
+        with open(hyp_path) as f:
             hypnogram = f.readlines()
-
-            y = []
 
             for element in hypnogram:
                 prev_stages_time, stage_time, label = element.rstrip().split(",")
-                prev_stages_time = int(prev_stages_time)
                 stage_time = int(stage_time)
 
                 n_epochs_in_stage = int(stage_time/30)
 
                 for label_entry in range(n_epochs_in_stage):
-                    stg = self.sleep_stage_dict()[label]
-                    # assert stg != None
+                    stg = label
+                    assert stg != None
                     
                     y.append(stg)
                     
-        return x, y, subject_number, record_number
-        
+        return x, y
