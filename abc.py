@@ -30,6 +30,7 @@ class Abc(SleepdataOrg):
             1: self.Labels.N1,
             2: self.Labels.N2,
             3: self.Labels.N3,
+            4: self.Labels.Unknown,
             5: self.Labels.REM,
         }
     
@@ -44,9 +45,8 @@ class Abc(SleepdataOrg):
             "C4": {'ref1': self.TTRef.C4, 'ref2': r2},
             "O1": {'ref1': self.TTRef.O1, 'ref2': r2},
             "O2": {'ref1': self.TTRef.O2, 'ref2': r2},
-            "M1": {'ref1': self.TTRef.A1, 'ref2': r2},
-            "M2": {'ref1': self.TTRef.A2, 'ref2': r2},
+            "M1": {'ref1': self.TTRef.LPA, 'ref2': r2},
+            "M2": {'ref1': self.TTRef.RPA, 'ref2': r2},
             "E1": {'ref1': self.TTRef.EL, 'ref2': r2},
             "E2": {'ref1': self.TTRef.ER, 'ref2': r2},
         }
-        

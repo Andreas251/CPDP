@@ -41,6 +41,7 @@ class SleepdataPipeline(ABC):
         N2 = 2
         N3 = 3
         REM = 4
+        Unknown = 5
         
     class TTRef(Enum):        
         # 10-10 EEG system
@@ -128,6 +129,9 @@ class SleepdataPipeline(ABC):
         LPA = auto() # Same as A1 in 10-20 system
         RPA = auto() # Same as A2 in 10-20 system
         
+        EL = auto()
+        ER = auto()
+        
         
         def __str__(self):
             return self.name
@@ -191,7 +195,7 @@ class SleepdataPipeline(ABC):
                                       r1=ref1,
                                       r2=ref2)
     
-    def __map_channels(self, dic):
+    def __map_channels(self, dic, y_len):
         new_dict = dict()
         
         for key in dic.keys():
@@ -205,11 +209,22 @@ class SleepdataPipeline(ABC):
             ref1 = chnl['ref1']
             ref2 = chnl['ref2']
             
+            try:
+                sample_rate = chnl['sample_rate_override']
+            except KeyError:
+                sample_rate = self.sample_rate()
+            
             ctype = 'EOG' if ref1 in [self.TTRef.EL,
                                       self.TTRef.ER] else 'EEG'
             
             new_key = self.__mapping(ctype, ref1, ref2)
-            new_dict[new_key] = self.resample_channel(dic[key]) # TODO: Test that resampling works
+            
+            data = dic[key]
+            assert len(data) == y_len*sample_rate*30
+            
+            new_dict[new_key] = self.resample_channel(data,
+                                                      output_rate=128,
+                                                      source_sample_rate=sample_rate) # TODO: Test that resampling works
             
         return new_dict
     
@@ -218,7 +233,7 @@ class SleepdataPipeline(ABC):
         return list(map(lambda x: self.label_mapping()[x], labels))
     
     
-    def resample_channel(self, channel, output_rate=128):
+    def resample_channel(self, channel, output_rate, source_sample_rate):
         """
         Function to resample a single data channel to the desired sample rate.
         
@@ -228,7 +243,7 @@ class SleepdataPipeline(ABC):
         channel_resampled = resample_poly(
             channel,
             output_rate,
-            self.sample_rate(),
+            source_sample_rate,
             axis=0
         )
 
@@ -275,7 +290,7 @@ class SleepdataPipeline(ABC):
             for record in paths_dict[subject_number]:
                 x, y = self.read_psg(record)
     
-                x = self.__map_channels(x)
+                x = self.__map_channels(x, len(y))
                 y = self.__map_labels(y)
          
                 write_function(

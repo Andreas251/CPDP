@@ -7,7 +7,6 @@ import mne
 
 from .base import SleepdataPipeline
 
-
 class Svuh(SleepdataPipeline):
     """
     ABOUT THIS DATASET 
@@ -15,39 +14,37 @@ class Svuh(SleepdataPipeline):
     """
   
     def sample_rate(self):
-        return 200
+        return 128
         
         
     def dataset_name(self):
-        return "isruc"
+        return "svuh"
     
     
     def label_mapping(self):
-        return 0
-        #return {
-        #    "0": self.Labels.Wake,
-        #    "1": self.Labels.N1,
-        #    "2": self.Labels.N2,
-        #    "3": self.Labels.N3,
-        #    "5": self.Labels.REM,
-        #}
+        return {
+            "0": self.Labels.Wake,
+            "1": self.Labels.REM,
+            "2": self.Labels.N1,
+            "3": self.Labels.N2,
+            "4": self.Labels.N3,
+            "5": self.Labels.N3, # Stage 4 in SVUH is same as N3
+            "6": self.Labels.Unknown,
+            "7": self.Labels.Unknown
+        }
     
     
     def channel_mapping(self):
-        return 0
-        #return {
-        #    "F3_A2": {'ref1': self.TTRef.F3, 'ref2': self.TTRef.A2},
-        #    "C3_A2": {'ref1': self.TTRef.C3, 'ref2': self.TTRef.A2},
-        #    "F4_A1": {'ref1': self.TTRef.F4, 'ref2': self.TTRef.A1},
-        #    "C4_A1": {'ref1': self.TTRef.C4, 'ref2': self.TTRef.A1},
-        #    "O1_A2": {'ref1': self.TTRef.O1, 'ref2': self.TTRef.A2},
-        #    "O2_A1": {'ref1': self.TTRef.O2, 'ref2': self.TTRef.A1},
-        #    "ROC_A1": {'ref1': self.TTRef.ER, 'ref2': self.TTRef.A1},
-        #    "LOC_A2": {'ref1': self.TTRef.EL, 'ref2': self.TTRef.A2},
-        #}
+        return {
+            "Lefteye": {'ref1': self.TTRef.EL, 'ref2': self.TTRef.RPA},
+            "RightEye": {'ref1': self.TTRef.ER, 'ref2': self.TTRef.LPA},
+            "C3A2": {'ref1': self.TTRef.C3, 'ref2': self.TTRef.RPA},
+            "C4A1": {'ref1': self.TTRef.C4, 'ref2': self.TTRef.LPA}
+        }
     
     
     def list_records(self, basepath):
+        basepath = basepath + 'files/'
         file_base = "ucddb"
         file_path = basepath+'/'+file_base
         subject_ids = ["002","003","005","006","007","008","009","010","011","012","013","014","015","017","018","019",
@@ -67,25 +64,20 @@ class Svuh(SleepdataPipeline):
         return dic
     
     def read_psg(self, record):
-        print(record)
         (datapath, labelpath) = record
         
         data = mne.io.read_raw_edf(datapath)
-        print(data.ch_names)
+
+        dic = dict()
         
-        exit()
+        with open(labelpath, 'rb') as f:
+            y = list(map(lambda x: chr(x[0]), f.readlines()))
         
-        return 0
-        #datapath, labelpath = record
-        #
-        #x = dict()
-        #
-        #mat = scipy.io.loadmat(datapath)
-        #for key in self.channel_mapping().keys():
-        #    chnl = np.array(mat[key]).flatten()
-        #    x[key] = chnl
-        #    
-        #with open(labelpath, "r") as f:
-        #    y = list(map(lambda x: x[0], f.readlines()))
-        #    
-        #return x, y
+        x_len = len(y)*self.sample_rate()*30
+        
+        for channel in self.channel_mapping().keys():
+            channel_data = data[channel]
+            relative_channel_data = channel_data[0][0] - channel_data[1]
+            dic[channel] = relative_channel_data[:x_len]
+        
+        return dic, y

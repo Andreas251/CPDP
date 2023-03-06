@@ -21,14 +21,26 @@ class Ccshs(SleepdataOrg):
     def dataset_name(self):
         return "ccshs"
     
+    def label_mapping(self): # TODO Check if correct
+        return {
+            0: self.Labels.Wake,
+            1: self.Labels.N1,
+            2: self.Labels.N2,
+            3: self.Labels.N3,
+            4: self.Labels.Unknown,
+            5: self.Labels.REM,
+        }
+    
     
     def channel_mapping(self):
+        r2 = self.TTRef.Fpz
+        
         return {
-            "C3": "EEG_C3-Fpz",
-            "C4": "EEG_C4-Fpz",
-            "A1": "EEG_A1-Fpz",
-            "A2": "EEG_A2-Fpz",
-            "LOC": "EOG_EL-Fpz",
-            "ROC": "EOG_ER-Fpz",
+            "C3": {'ref1': self.TTRef.C3, 'ref2': r2},
+            "C4": {'ref1': self.TTRef.C4, 'ref2': r2},
+            "A1": {'ref1': self.TTRef.LPA, 'ref2': r2},
+            "A2": {'ref1': self.TTRef.RPA, 'ref2': r2},
+            "LOC": {'ref1': self.TTRef.EL, 'ref2': r2},
+            "ROC": {'ref1': self.TTRef.ER, 'ref2': r2},
         }
         
