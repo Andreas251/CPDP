@@ -32,14 +32,14 @@ class Dcsm(SleepdataPipeline):
     
     def channel_mapping(self):
         return {
-            "E1-M2": {'ref1': self.TTRef.EL, 'ref2': self.TTRef.A2},
-            "E2-M2": {'ref1': self.TTRef.ER, 'ref2': self.TTRef.A2},
-            "C3-M2": {'ref1': self.TTRef.C3, 'ref2': self.TTRef.A2},
-            "C4-M1": {'ref1': self.TTRef.C4, 'ref2': self.TTRef.A1},
-            "F3-M2": {'ref1': self.TTRef.F3, 'ref2': self.TTRef.A2},
-            "F4-M1": {'ref1': self.TTRef.F4, 'ref2': self.TTRef.A1},
-            "O1-M2": {'ref1': self.TTRef.O1, 'ref2': self.TTRef.A2},
-            "O2-M1": {'ref1': self.TTRef.O2, 'ref2': self.TTRef.A1}
+            "E1-M2": {'ref1': self.TTRef.EL, 'ref2': self.TTRef.RPA},
+            "E2-M2": {'ref1': self.TTRef.ER, 'ref2': self.TTRef.RPA},
+            "C3-M2": {'ref1': self.TTRef.C3, 'ref2': self.TTRef.RPA},
+            "C4-M1": {'ref1': self.TTRef.C4, 'ref2': self.TTRef.LPA},
+            "F3-M2": {'ref1': self.TTRef.F3, 'ref2': self.TTRef.RPA},
+            "F4-M1": {'ref1': self.TTRef.F4, 'ref2': self.TTRef.LPA},
+            "O1-M2": {'ref1': self.TTRef.O1, 'ref2': self.TTRef.RPA},
+            "O2-M1": {'ref1': self.TTRef.O2, 'ref2': self.TTRef.LPA}
         }
     
     

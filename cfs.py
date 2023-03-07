@@ -1,6 +1,6 @@
 from .sdo_base import SleepdataOrg
 
-class Shhs(SleepdataOrg):
+class Cfs(SleepdataOrg):
 
     def sample_rate(self):
         return 0
