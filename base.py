@@ -41,6 +41,7 @@ class SleepdataPipeline(ABC):
         N2 = 2
         N3 = 3
         REM = 4
+        UNKNOWN = 5
         
     class TTRef(Enum):        
         # 10-10 EEG system
@@ -125,8 +126,10 @@ class SleepdataPipeline(ABC):
         Oz = auto()
         O2 = auto()
         Iz = auto()
-        LPA = auto() # Same as A1 in 10-20 system
-        RPA = auto() # Same as A2 in 10-20 system
+        LPA = auto() # Same as A1 in 10-20 system which is also equal to M1
+        RPA = auto() # Same as A2 in 10-20 system which is also equal to M2
+        EL = auto()
+        ER = auto()
         
         
         def __str__(self):
