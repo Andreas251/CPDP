@@ -13,13 +13,7 @@ class Chat(SleepdataOrg):
 
     
     EEG and EOG signals were each sampled at 200Hz.
-    """  
-    def sample_rate(self):
-        return 200
-        
-        
-    def dataset_name(self):
-        return "chat"
+    """ 
     
     def label_mapping(self): # TODO Check if correct
         return {

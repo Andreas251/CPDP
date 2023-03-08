@@ -4,7 +4,6 @@ import xml.etree.ElementTree as ET
 
 from .sdo_base import SleepdataOrg
 
-
 class Abc(SleepdataOrg):
     """
     ABOUT THIS DATASET 
@@ -15,23 +14,16 @@ class Abc(SleepdataOrg):
     {EDF label}-Fpz (e.g. F3-Fpz) 
     
     EEG and EOG signals were each sampled at 256Hz.
-    """ 
-    def sample_rate(self):
-        return 256
-        
-        
-    def dataset_name(self):
-        return "abc"
-    
+    """
     
     def label_mapping(self): # TODO Check if correct
         return {
-            0: self.Labels.Wake,
-            1: self.Labels.N1,
-            2: self.Labels.N2,
-            3: self.Labels.N3,
-            4: self.Labels.Unknown,
-            5: self.Labels.REM,
+            '0': self.Labels.Wake,
+            '1': self.Labels.N1,
+            '2': self.Labels.N2,
+            '3': self.Labels.N3,
+            '4': self.Labels.UNKNOWN,
+            '5': self.Labels.REM,
         }
     
     

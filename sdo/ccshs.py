@@ -14,13 +14,6 @@ class Ccshs(SleepdataOrg):
     
     EEG and EOG signals were each sampled at 200Hz.
     """  
-    def sample_rate(self):
-        return 128
-        
-        
-    def dataset_name(self):
-        return "ccshs"
-    
     def label_mapping(self): # TODO Check if correct
         return {
             0: self.Labels.Wake,

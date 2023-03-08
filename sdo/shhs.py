@@ -1,13 +1,6 @@
 from .sdo_base import SleepdataOrg
 
 class Shhs(SleepdataOrg):
-
-    def sample_rate(self):
-        return 125
-        
-    def dataset_name(self):
-        return "shhs"
-    
     def label_mapping(self):
         return {
             '0': self.Labels.Wake,
