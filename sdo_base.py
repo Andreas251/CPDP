@@ -47,20 +47,20 @@ class SleepdataOrg(SleepdataPipeline):
         for idx in range(len(psg_files)):
             psg_file_path = psg_files[idx]
             
-            # TODO: Fix this. If there is only one day of results, then there are no folder structure here.
-            dirs = psg_file_path.split("/")
-            exam_no = dirs[-2]
-            
-            subject_number = psg_file_path.split("-")[-1].split(".")[0]
-            hyp_file_path = f"{hyp_path}{exam_no}/{exam_no}-{subject_number}-profusion.xml"
+            hyp_file_path = psg_file_path.replace('/'+psg+'/', '/'+hyp+'/', 1).replace('.edf', '-profusion.xml', 1)
+            splits = hyp_file_path.split("-")
+            subject_number = splits[-2]
             
             assert os.path.exists(psg_file_path), "File path does not exist"
             assert os.path.exists(hyp_file_path), "File path does not exist"
-
+            
             paths_dict.setdefault(subject_number, []).append((psg_file_path, hyp_file_path))
         
         return paths_dict
     
+    # Override this if needed
+    def slice_channel(x, y_len):
+        return x
     
     def read_psg(self, record):
         path_to_psg, path_to_hyp = record
@@ -83,13 +83,11 @@ class SleepdataOrg(SleepdataPipeline):
         data = mne.io.read_raw_edf(path_to_psg)
         
         for channel in self.channel_mapping().keys():
-            try:
-                sample_rate = self.channel_mapping()[channel]['sample_rate_override']
-                print("Found overridden sample rate for channel: "+channel)
-            except KeyError:
-                sample_rate = self.sample_rate()
-            
-            x_len = len(y)*sample_rate*30
+            #try:
+            #    sample_rate = self.channel_mapping()[channel]['sample_rate_override']
+            #    print("Found overridden sample rate for channel: "+channel)
+            #except KeyError:
+            #    sample_rate = self.sample_rate()
             
             channel_data = data[channel]
             first_ref = channel_data[0][0]
@@ -99,8 +97,12 @@ class SleepdataOrg(SleepdataPipeline):
             assert len(first_ref) == len(second_ref)
             
             relative_channel_data = first_ref - second_ref # TODO: Is is correct?
-            x[channel] = relative_channel_data[:x_len]
+            
+            final_channel_data = self.slice_channel(relative_channel_data, len(y))
+            
+            assert len(final_channel_data) == y_len*self.sample_rate()*30
+            
+            x[channel] = final_channel_data
         # endregion
         
         return x, y
-        

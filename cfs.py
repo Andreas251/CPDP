@@ -9,6 +9,7 @@ class Cfs(SleepdataOrg):
         return "cfs"
     
     def label_mapping(self):
+        return 0
         #return {
         #    '0': self.Labels.Wake,
         #    '1': self.Labels.N1,
@@ -19,6 +20,7 @@ class Cfs(SleepdataOrg):
         #}
     
     def channel_mapping(self):
+        return 0
         #return {
         #    "EEG(sec)": {'ref1': self.TTRef.C3, 'ref2': self.TTRef.RPA},
         #    "EEG": {'ref1': self.TTRef.C4, 'ref2': self.TTRef.LPA},

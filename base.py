@@ -209,10 +209,10 @@ class SleepdataPipeline(ABC):
             ref1 = chnl['ref1']
             ref2 = chnl['ref2']
             
-            try:
-                sample_rate = chnl['sample_rate_override']
-            except KeyError:
-                sample_rate = self.sample_rate()
+           #try:
+           #    sample_rate = chnl['sample_rate_override']
+           #except KeyError:
+           #    sample_rate = self.sample_rate()
             
             ctype = 'EOG' if ref1 in [self.TTRef.EL,
                                       self.TTRef.ER] else 'EEG'
@@ -220,11 +220,11 @@ class SleepdataPipeline(ABC):
             new_key = self.__mapping(ctype, ref1, ref2)
             
             data = dic[key]
-            assert len(data) == y_len*sample_rate*30
+            assert len(data) == y_len*self.sample_rate()*30
             
             new_dict[new_key] = self.resample_channel(data,
                                                       output_rate=128,
-                                                      source_sample_rate=sample_rate) # TODO: Test that resampling works
+                                                      source_sample_rate=self.sample_rate()) # TODO: Test that resampling works
             
         return new_dict
     
