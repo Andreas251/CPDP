@@ -1,10 +1,11 @@
 import os
 from h5py import File
+from abc import abstractmethod
 
 from .base import SleepdataPipeline
 
 
-class Dod(SleepdataPipeline):
+class Base_DOD(SleepdataPipeline):
     """
     ABOUT THIS DATASET 
     
@@ -21,11 +22,13 @@ class Dod(SleepdataPipeline):
   
 
     def sample_rate(self):
-        return 256
-        
-        
+        return 250 # We assume this due to what can be seen in the DOD code. USleep says 256 though..
+    
+    
+    @property
+    @abstractmethod
     def dataset_name(self):
-        return "dod"
+        pass
     
     
     def channel_mapping(self):
@@ -52,12 +55,11 @@ class Dod(SleepdataPipeline):
                 record_path = f"{dir}/{file}"
                 
                 paths_dict[record_no] = [record_path]
-    
+                
         return paths_dict
     
     
     def read_psg(self, record):
-        
         x = dict()
         
         with File(record, "r") as h5:
@@ -65,19 +67,15 @@ class Dod(SleepdataPipeline):
             eeg_channels = signals.get("eeg")
             eog_channels = signals.get("eog")
             
-            # Number of epochs in signals are not an integer. Removing elements in the end to have an integer of epochs.
             channel_len = len(eeg_channels.get(list(eeg_channels.keys())[0]))
-            remainder = channel_len % (self.sample_rate()*30)
-            new_channel_len = channel_len - remainder
-            x_num_epochs = int(new_channel_len/self.sample_rate()/30)
+            x_num_epochs = int(channel_len/self.sample_rate()/30)
                         
             for channel in eeg_channels:
-                x[channel] = eeg_channels.get(channel)[()][:new_channel_len]
+                x[channel] = eeg_channels.get(channel)[()]
             for channel in eog_channels:
-                x[channel] = eog_channels.get(channel)[()][:new_channel_len]
+                x[channel] = eog_channels.get(channel)[()]
             
-            # There are more labels than epochs of signals. Removing last elements
-            y = list(h5.get("hypnogram")[()])[:x_num_epochs]
+            y = list(h5.get("hypnogram")[()])
             
             assert(len(y) == x_num_epochs)
         

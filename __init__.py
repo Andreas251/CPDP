@@ -3,7 +3,8 @@ from .chat import Chat
 from .dcsm import Dcsm
 from .sedf_sc import Sedf_SC
 from .isruc import Isruc
-from .dod import Dod
+from .dod_o import DOD_O
+from .dod_h import DOD_H
 from .svuh import Svuh
 from .shhs import Shhs
 from .cfs import Cfs
