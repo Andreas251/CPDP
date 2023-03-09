@@ -32,9 +32,24 @@ class SleepdataPipeline(ABC):
             exit(1)
         
         if port_on_init:
+            assert os.path.exists(self.dataset_path), f"Path {self.dataset_path} does not exist"
+            
             paths_dict = self.list_records(basepath=self.dataset_path)
             self.port_data(write_function=self.write_function, paths_dict=paths_dict)
+    
+    
+    class Mapping:
+        def __init__(self, ref1, ref2):
+            self.ref1 = ref1
+            self.ref2 = ref2
             
+        def get_mapping(self):
+            ctype = 'EOG' if self.ref1 in [SleepdataPipeline.TTRef.EL,
+                                           SleepdataPipeline.TTRef.ER] else 'EEG'
+            return '{t}_{r1}-{r2}'.format(t=ctype,
+                                          r1=self.ref1,
+                                          r2=self.ref2)
+    
     class Labels(IntEnum):
         Wake = 0
         N1 = 1
@@ -134,19 +149,11 @@ class SleepdataPipeline(ABC):
         
         def __str__(self):
             return self.name
-    
-    
+      
     @property
     @abstractmethod
     def label_mapping(self):
         pass
-    
-    
-    @property
-    @abstractmethod
-    def sample_rate(self):
-        pass
-    
     
     @property
     @abstractmethod
@@ -189,14 +196,9 @@ class SleepdataPipeline(ABC):
         """
         pass
     
-    def __mapping(self,ctype, ref1, ref2):
-        return '{t}_{r1}-{r2}'.format(t=ctype,
-                                      r1=ref1,
-                                      r2=ref2)
-    
     def __map_channels(self, dic, y_len):
         new_dict = dict()
-        
+
         for key in dic.keys():
             mapping = self.channel_mapping()
             
@@ -204,26 +206,16 @@ class SleepdataPipeline(ABC):
                 chnl = mapping[key]
             except KeyError:
                 continue
-                
-            ref1 = chnl['ref1']
-            ref2 = chnl['ref2']
             
-           #try:
-           #    sample_rate = chnl['sample_rate_override']
-           #except KeyError:
-           #    sample_rate = self.sample_rate()
+            new_key = chnl.get_mapping()
+
+            data, sample_rate = dic[key]
             
-            ctype = 'EOG' if ref1 in [self.TTRef.EL,
-                                      self.TTRef.ER] else 'EEG'
-            
-            new_key = self.__mapping(ctype, ref1, ref2)
-            
-            data = dic[key]
-            assert len(data) == y_len*self.sample_rate()*30
+            assert len(data) == y_len*sample_rate*30, "Length of data does not match the length of labels"
             
             new_dict[new_key] = self.resample_channel(data,
                                                       output_rate=128,
-                                                      source_sample_rate=self.sample_rate()) # TODO: Test that resampling works
+                                                      source_sample_rate=sample_rate) # TODO: Test that resampling works
             
         return new_dict
     
@@ -270,7 +262,9 @@ class SleepdataPipeline(ABC):
         """
         Path(output_basepath).mkdir(parents=True, exist_ok=True)
         
-        with File(f"{output_basepath}{self.dataset_name()}.hdf5", "a") as f:
+        file_path = f"{output_basepath}{self.dataset_name()}.hdf5"
+        
+        with File(file_path, "a") as f:
             grp_subject = f.create_group(f"{subject_number}")
             subgrp_record = grp_subject.create_group(f"{record_number}")
             
@@ -282,7 +276,15 @@ class SleepdataPipeline(ABC):
             subgrp_record.create_dataset("hypnogram", data=y)
         
         
-    def port_data(self, write_function, paths_dict):
+    def port_data(self, write_function, paths_dict): # TODO: Test
+        
+        file_path = f"{self.output_path}/{self.dataset_name()}.hdf5"
+        exists = os.path.exists(file_path)
+        
+        if exists:
+            print("HDF5 file already exists. Removing it")
+            os.remove(file_path)
+        
         for subject_number in list(paths_dict.keys())[:self.max_num_subjects]:
             record_number = 0
             
