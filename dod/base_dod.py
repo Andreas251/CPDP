@@ -2,7 +2,9 @@ import os
 from h5py import File
 from abc import abstractmethod
 
-from .base import SleepdataPipeline
+import sys
+sys.path.append('../SleepDataPipeline')
+from SleepDataPipeline.base import SleepdataPipeline
 
 
 class Base_DOD(SleepdataPipeline):
@@ -33,16 +35,16 @@ class Base_DOD(SleepdataPipeline):
     
     def channel_mapping(self):
         return {
-            "C3_M2": {'ref1': self.TTRef.C3, 'ref2': self.TTRef.RPA},
-            "C4_M1": {'ref1': self.TTRef.C4, 'ref2': self.TTRef.LPA},
-            "F4_F4": {'ref1': self.TTRef.F3, 'ref2': self.TTRef.F4},
-            "F3_M2": {'ref1': self.TTRef.F3, 'ref2': self.TTRef.RPA},
-            "F3_O1": {'ref1': self.TTRef.F3, 'ref2': self.TTRef.O1},
-            "F4_O2": {'ref1': self.TTRef.F4, 'ref2': self.TTRef.O2},
-            "O1_M2": {'ref1': self.TTRef.O1, 'ref2': self.TTRef.RPA},
-            "O2_M1": {'ref1': self.TTRef.O2, 'ref2': self.TTRef.LPA},
-            "EOG1": {'ref1': self.TTRef.EL, 'ref2': self.TTRef.RPA}, # TODO: Find out refs
-            "EOG2": {'ref1': self.TTRef.ER, 'ref2': self.TTRef.RPA}, # TODO: Find out refs
+            "C3_M2": self.Mapping(self.TTRef.C3, self.TTRef.RPA),
+            "C4_M1": self.Mapping(self.TTRef.C4, self.TTRef.LPA),
+            "F4_F4": self.Mapping(self.TTRef.F3, self.TTRef.F4),
+            "F3_M2": self.Mapping(self.TTRef.F3, self.TTRef.RPA),
+            "F3_O1": self.Mapping(self.TTRef.F3, self.TTRef.O1),
+            "F4_O2": self.Mapping(self.TTRef.F4, self.TTRef.O2),
+            "O1_M2": self.Mapping(self.TTRef.O1, self.TTRef.RPA),
+            "O2_M1": self.Mapping(self.TTRef.O2, self.TTRef.LPA),
+            "EOG1": self.Mapping(self.TTRef.EL, self.TTRef.RPA), # TODO: Find out refs
+            "EOG2": self.Mapping(self.TTRef.ER, self.TTRef.RPA), # TODO: Find out refs
         }
     
     
@@ -71,12 +73,12 @@ class Base_DOD(SleepdataPipeline):
             x_num_epochs = int(channel_len/self.sample_rate()/30)
                         
             for channel in eeg_channels:
-                x[channel] = eeg_channels.get(channel)[()]
+                x[channel] = (eeg_channels.get(channel)[()], self.sample_rate())
             for channel in eog_channels:
-                x[channel] = eog_channels.get(channel)[()]
+                x[channel] = (eog_channels.get(channel)[()], self.sample_rate())
             
             y = list(h5.get("hypnogram")[()])
             
-            assert(len(y) == x_num_epochs)
+            assert(len(y) == x_num_epochs), "Length of signal does not match the number of labels."
         
         return x, y
