@@ -283,11 +283,19 @@ class SleepdataPipeline(ABC):
         
         
     def port_data(self, write_function, paths_dict): # TODO: Test
+        #old_y = []
+        
         for subject_number in list(paths_dict.keys())[:self.max_num_subjects]:
             record_number = 0
             
             for record in paths_dict[subject_number]:
                 x, y = self.read_psg(record)
+                #print("PRINTING Y's")
+                #print(y[1400:1430])
+                #print(old_y[1400:1430])
+                #assert y != old_y
+                #old_y = y
+                
     
                 x = self.__map_channels(x, len(y))
                 y = self.__map_labels(y)
