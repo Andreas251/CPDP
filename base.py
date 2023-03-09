@@ -141,8 +141,9 @@ class SleepdataPipeline(ABC):
         Oz = auto()
         O2 = auto()
         Iz = auto()
-        LPA = auto() # Same as A1 in 10-20 system which is also equal to M1
-        RPA = auto() # Same as A2 in 10-20 system which is also equal to M2
+        LPA = auto() # Same as A1 in 10-20 system
+        RPA = auto() # Same as A2 in 10-20 system
+        
         EL = auto()
         ER = auto()
         
@@ -265,7 +266,8 @@ class SleepdataPipeline(ABC):
         file_path = f"{output_basepath}{self.dataset_name()}.hdf5"
         
         with File(file_path, "a") as f:
-            grp_subject = f.create_group(f"{subject_number}")
+            # Require subject group, since we want to use the existing one, if subject has more records
+            grp_subject = f.require_group(f"{subject_number}")
             subgrp_record = grp_subject.create_group(f"{record_number}")
             
             subsubgrp_psg = subgrp_record.create_group("psg")
@@ -289,8 +291,13 @@ class SleepdataPipeline(ABC):
             record_number = 0
             
             for record in paths_dict[subject_number]:
-                x, y = self.read_psg(record)
-    
+                psg = self.read_psg(record)
+                
+                if psg == None:
+                    continue
+                
+                x, y = psg
+                
                 x = self.__map_channels(x, len(y))
                 y = self.__map_labels(y)
          
