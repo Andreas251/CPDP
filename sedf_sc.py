@@ -18,85 +18,132 @@ class Sedf_SC(SleepdataPipeline):
     
     EEG and EOG signals were each sampled at 100Hz.
     """        
-    def sleep_stage_dict(self):
+    def label_mapping(self):
         return {
-            "Sleep stage W": 0,
-            "Sleep stage 1": 1,
-            "Sleep stage 2": 2,
-            "Sleep stage 3": 3,
-            "Sleep stage 4": 3,
-            "Sleep stage R": 4,
-            "Sleep stage ?": "Unknown",
-            "Movement time": 1 # TODO: This is WRONG. Find out what we do with this type of stage!
+            "Sleep stage W": self.Labels.Wake,
+            "Sleep stage 1": self.Labels.N1,
+            "Sleep stage 2": self.Labels.N2,
+            "Sleep stage 3": self.Labels.N3,
+            "Sleep stage 4": self.Labels.N3,
+            "Sleep stage R": self.Labels.REM,
+            "Sleep stage ?": self.Labels.UNKNOWN,
+            "Movement time": self.Labels.N1 # TODO: This is WRONG. Find out what we do with this type of stage!
         }
+    
   
     def sample_rate(self):
         return 100
         
         
     def dataset_name(self):
-        return "sedf_sc"
+        return "sedf_sc" # TODO: Just sedf?
     
     
     def channel_mapping(self):
         return {
-            "EOG horizontal": "EOG_E1-E2", 
-            "EEG Fpz-Cz": "EEG_Fpz-Cz",
-            "EEG Pz-Oz": "EEG_Pz-Oz"
+            "EOG horizontal": {'ref1': self.TTRef.EL, 'ref2': self.TTRef.ER}, 
+            "EEG Fpz-Cz": {'ref1': self.TTRef.Fpz, 'ref2': self.TTRef.Cz},
+            "EEG Pz-Oz": {'ref1': self.TTRef.Pz, 'ref2': self.TTRef.Oz}
         }
     
     
-    def read_psg(self, record_path):
-        record_dir = os.listdir(record_path)
+    def list_records(self, basepath):
+        paths_dict = {}
         
-        assert len(record_dir) == 2 # A record must contain only one PSG and one Hypnogram
+        record_paths = os.listdir(basepath)
         
-        psg_filename = [s for s in record_dir if "PSG.edf".lower() in s.lower()][0]
-        hyp_filename = [s for s in record_dir if "Hypnogram.edf".lower() in s.lower()][0]
-        
-        path_to_psg = record_path + psg_filename
-        path_to_hypnogram = record_path + hyp_filename
-        
-        # Subject and record number is included in naming convention
-        subject_number = psg_filename[3:5]
-        record_number = psg_filename[5:6]
-        
-        # region PSG
-        x = dict()
-        
-        data = mne.io.read_raw_edf(path_to_psg)
-        
-        for channel in self.relevant_channels():
-            try:
-                channel_data = data.get_data(channel)[0]
-                # print(f"Data channel '{channel}' found. Getting data...")
-            except ValueError:
-                # print(f"ValueError: data channel '{channel}' not found. Skipping...")
-                continue
+        for path in record_paths:
+            record_path = f"{basepath}{path}"
             
-            channel_data_resampled = self.resample_channel(
-                channel_data, 
-                input_rate=self.sample_rate()
-            )
-            x[self.channel_mapping()[channel]] = channel_data_resampled
+            for file in os.listdir(record_path):
+                if "Hypnogram" in file:
+                    hyp_path = f"{record_path}/{file}"
+                elif "PSG" in file:
+                    psg_path = f"{record_path}/{file}"
+                else:
+                    print("PSG or hypnogram file not found. Exiting..")
+                    exit()
+                    
+            paths_dict[path] = [(psg_path, hyp_path)]
+        
+        return paths_dict
+    
+    
+    def read_psg(self, record):
+        psg_path, hyp_path = record
+        psg_path = "../../data/sedf_from_physionet/sleep-telemetry/ST7012J0-PSG.edf"
+        hyp_path = "../../data/sedf_from_physionet/sleep-telemetry/ST7012JP-Hypnogram.edf"
+        
+        
+        x = dict()
+        y = [] 
+        
+        # region x
+        data = mne.io.read_raw_edf(psg_path)
+        for channel in self.channel_mapping().keys():
+            print(channel)
+            channel_data = data.get_data(channel)[0]
+            print(len(channel_data))
+            
+            
+            x_num_epochs = int(len(channel_data)/self.sample_rate()/30)
+            print(x_num_epochs)
+            #print(channel_data[10000:10010])
+            #print(channel_data[:10])
+            #print(channel_data[-10:])
+            
+            print(channel_data[1020:1030])
+            print(channel_data[-27500:-27490])
+            
+            old_dat = channel_data[0]
+            idx = 0
+            for el in channel_data:
+                if el != old_dat:
+                    print(old_dat)
+                    print(el)
+                    print(f"Index: {idx}")
+                    break
+                old_dat = el
+                idx = idx + 1
+            
+            
+            reversed_arr = channel_data[::-1]
+            
+            old_dat = reversed_arr[0]
+            idx = 0
+            for el in reversed_arr:
+                if el != old_dat:
+                    print(old_dat)
+                    print(el)
+                    print(f"Index: {idx}")
+                    break
+                old_dat = el
+                idx = idx + 1
+            
+            exit()
+            
+            x[channel] = channel_data
         # endregion
         
-        # region Labels
-        y = []
-        hyp = mne.read_annotations(path_to_hypnogram)        
+        # region y
+        hyp = mne.read_annotations(hyp_path) 
         
         for stage in hyp:
-            stg = self.sleep_stage_dict().get(stage.get("description"))
+            stg = stage.get("description")
             
-            # assert stg != None
-                
+            assert stg != None
+            
+            #print(stage)
+            
             dur = stage.get("duration")
-            num_epochs = int(dur/30)
-            
-            if stg != "Unknown":           
-                for e in range(num_epochs):
-                    y.append(stg)
+            dur_in_epochs = int(dur/30)
+                    
+            for e in range(dur_in_epochs):
+                y.append(stg)
+               
+        print(len(y))
+        y = y[0:x_num_epochs] # Assuming that we first N labels
         # endregion
         
-        return x, y, subject_number, record_number
-        
+        exit()
+        return x, y
