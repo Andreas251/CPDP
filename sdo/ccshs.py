@@ -14,26 +14,16 @@ class Ccshs(SleepdataOrg):
     
     EEG and EOG signals were each sampled at 200Hz.
     """  
-    def label_mapping(self): # TODO Check if correct
-        return {
-            0: self.Labels.Wake,
-            1: self.Labels.N1,
-            2: self.Labels.N2,
-            3: self.Labels.N3,
-            4: self.Labels.Unknown,
-            5: self.Labels.REM,
-        }
-    
     
     def channel_mapping(self):
         r2 = self.TTRef.Fpz
         
         return {
-            "C3": {'ref1': self.TTRef.C3, 'ref2': r2},
-            "C4": {'ref1': self.TTRef.C4, 'ref2': r2},
-            "A1": {'ref1': self.TTRef.LPA, 'ref2': r2},
-            "A2": {'ref1': self.TTRef.RPA, 'ref2': r2},
-            "LOC": {'ref1': self.TTRef.EL, 'ref2': r2},
-            "ROC": {'ref1': self.TTRef.ER, 'ref2': r2},
+            "C3": self.Mapping(self.TTRef.C3, r2),
+            "C4": self.Mapping(self.TTRef.C4, r2),
+            "A1": self.Mapping(self.TTRef.LPA, r2),
+            "A2": self.Mapping(self.TTRef.RPA, r2),
+            "LOC": self.Mapping(self.TTRef.EL, r2),
+            "ROC": self.Mapping(self.TTRef.ER, r2)
         }
         

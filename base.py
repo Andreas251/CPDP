@@ -36,7 +36,20 @@ class SleepdataPipeline(ABC):
             
             paths_dict = self.list_records(basepath=self.dataset_path)
             self.port_data(write_function=self.write_function, paths_dict=paths_dict)
+    
+    
+    class Mapping:
+        def __init__(self, ref1, ref2):
+            self.ref1 = ref1
+            self.ref2 = ref2
             
+        def get_mapping(self):
+            ctype = 'EOG' if self.ref1 in [SleepdataPipeline.TTRef.EL,
+                                           SleepdataPipeline.TTRef.ER] else 'EEG'
+            return '{t}_{r1}-{r2}'.format(t=ctype,
+                                          r1=self.ref1,
+                                          r2=self.ref2)
+    
     class Labels(IntEnum):
         Wake = 0
         N1 = 1
@@ -184,11 +197,6 @@ class SleepdataPipeline(ABC):
         """
         pass
     
-    def __mapping(self,ctype, ref1, ref2):
-        return '{t}_{r1}-{r2}'.format(t=ctype,
-                                      r1=ref1,
-                                      r2=ref2)
-    
     def __map_channels(self, dic, y_len):
         new_dict = dict()
 
@@ -199,15 +207,9 @@ class SleepdataPipeline(ABC):
                 chnl = mapping[key]
             except KeyError:
                 continue
-                
-            ref1 = chnl.ref1
-            ref2 = chnl.ref2
+            
+            new_key = chnl.get_mapping()
 
-            ctype = 'EOG' if ref1 in [self.TTRef.EL,
-                                      self.TTRef.ER] else 'EEG'
-            
-            new_key = self.__mapping(ctype, ref1, ref2)
-            
             data, sample_rate = dic[key]
             
             assert len(data) == y_len*sample_rate*30, "Length of data does not match the length of labels"

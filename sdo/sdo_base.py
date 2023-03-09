@@ -12,10 +12,16 @@ class SleepdataOrg(SleepdataPipeline):
     """
     ABOUT THIS
     """
-    @property
-    @abstractmethod
+
     def label_mapping(self): 
-        pass
+        return {
+            '0': self.Labels.Wake,
+            '1': self.Labels.N1,
+            '2': self.Labels.N2,
+            '3': self.Labels.N3,
+            '4': self.Labels.N3,
+            '5': self.Labels.REM,
+        }
     
     @property
     @abstractmethod
@@ -35,8 +41,8 @@ class SleepdataOrg(SleepdataPipeline):
         hyp = "annotations-events-profusion"
         psg = "edfs"
         
-        psg_path = f"{poly_path}{psg}/"
-        hyp_path = f"{poly_path}{hyp}/"
+        psg_path = f"{poly_path}{psg}"
+        hyp_path = f"{poly_path}{hyp}"
         
         psg_files = []
         
@@ -48,7 +54,7 @@ class SleepdataOrg(SleepdataPipeline):
 
         for idx in range(len(psg_files)):
             psg_file_path = psg_files[idx]
-            
+
             hyp_file_path = psg_file_path.replace('/'+psg+'/', '/'+hyp+'/', 1).replace('.edf', '-profusion.xml', 1)
             splits = hyp_file_path.split("-")
             subject_number = splits[-2]
@@ -94,21 +100,13 @@ class SleepdataOrg(SleepdataPipeline):
         
         data = mne.io.read_raw_edf(path_to_psg)
         sample_rate = int(data.info['sfreq'])
-        
+
         for channel in self.channel_mapping().keys():
-            #for index in key_tuple:
-            #    try:
-            #        channel_data = data[index]
-            #        channel = index
-            #        break
-            #    except ValueError:
-            #        pass
-            
             try:
                 channel_data = data[channel]
             except ValueError:
-                print('Channel {channel} was not found in the dataset. Possibilities are {channels}'.format(channel=channel,
-                                                                                                            channels=data.ch_names))
+                print('Channel {channel} was not found in the record. Possibilities are {channels}'.format(channel=channel,
+                                                                                                           channels=data.ch_names))
                 continue
             
             first_ref = channel_data[0][0]

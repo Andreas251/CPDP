@@ -15,30 +15,20 @@ class Abc(SleepdataOrg):
     
     EEG and EOG signals were each sampled at 256Hz.
     """
-    
-    def label_mapping(self): # TODO Check if correct
-        return {
-            '0': self.Labels.Wake,
-            '1': self.Labels.N1,
-            '2': self.Labels.N2,
-            '3': self.Labels.N3,
-            '4': self.Labels.UNKNOWN,
-            '5': self.Labels.REM,
-        }
-    
+
     
     def channel_mapping(self):
         r2 = self.TTRef.Fz
         
         return {
-            "F3": {'ref1': self.TTRef.F3, 'ref2': r2},
-            "F4": {'ref1': self.TTRef.F4, 'ref2': r2},
-            "C3": {'ref1': self.TTRef.C3, 'ref2': r2},
-            "C4": {'ref1': self.TTRef.C4, 'ref2': r2},
-            "O1": {'ref1': self.TTRef.O1, 'ref2': r2},
-            "O2": {'ref1': self.TTRef.O2, 'ref2': r2},
-            "M1": {'ref1': self.TTRef.LPA, 'ref2': r2},
-            "M2": {'ref1': self.TTRef.RPA, 'ref2': r2},
-            "E1": {'ref1': self.TTRef.EL, 'ref2': r2},
-            "E2": {'ref1': self.TTRef.ER, 'ref2': r2},
+            "F3": self.Mapping(self.TTRef.F3, r2),
+            "F4": self.Mapping(self.TTRef.F4, r2),
+            "C3": self.Mapping(self.TTRef.C3, r2),
+            "C4": self.Mapping(self.TTRef.C4, r2),
+            "O1": self.Mapping(self.TTRef.O1, r2),
+            "O2": self.Mapping(self.TTRef.O2, r2),
+            "M1": self.Mapping(self.TTRef.LPA, r2),
+            "M2": self.Mapping(self.TTRef.RPA, r2),
+            "E1": self.Mapping(self.TTRef.EL, r2),
+            "E2": self.Mapping(self.TTRef.ER, r2)
         }
