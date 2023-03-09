@@ -29,17 +29,17 @@ class Svuh(SleepdataPipeline):
             "3": self.Labels.N2,
             "4": self.Labels.N3,
             "5": self.Labels.N3, # Stage 4 in SVUH is same as N3
-            "6": self.Labels.Unknown,
-            "7": self.Labels.Unknown
+            "6": self.Labels.UNKNOWN,
+            "7": self.Labels.UNKNOWN
         }
     
     
     def channel_mapping(self):
         return {
-            "Lefteye": {'ref1': self.TTRef.EL, 'ref2': self.TTRef.RPA},
-            "RightEye": {'ref1': self.TTRef.ER, 'ref2': self.TTRef.LPA},
-            "C3A2": {'ref1': self.TTRef.C3, 'ref2': self.TTRef.RPA},
-            "C4A1": {'ref1': self.TTRef.C4, 'ref2': self.TTRef.LPA}
+            "Lefteye": self.Mapping(self.TTRef.EL, self.TTRef.RPA),
+            "RightEye": self.Mapping(self.TTRef.ER, self.TTRef.LPA),
+            "C3A2": self.Mapping(self.TTRef.C3, self.TTRef.RPA),
+            "C4A1": self.Mapping(self.TTRef.C4, self.TTRef.LPA)
         }
     
     
@@ -47,7 +47,8 @@ class Svuh(SleepdataPipeline):
         basepath = basepath + 'files/'
         file_base = "ucddb"
         file_path = basepath+'/'+file_base
-        subject_ids = ["002","003","005","006","007","008","009","010","011","012","013","014","015","017","018","019",
+        subject_ids = ["002","003","005","006","007","008","009","010",
+                       "011","012","013","014","015","017","018","019",
                       "020","021","022","023","024","025","026","027","028"]
         
         dic = dict()

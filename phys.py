@@ -14,14 +14,12 @@ class Phys(SleepdataPipeline):
 
     def label_mapping(self):
         return {
-            #"Sleep stage W": self.Labels.Wake,
-            #"Sleep stage 1": self.Labels.N1,
-            #"Sleep stage 2": self.Labels.N2,
-            #"Sleep stage 3": self.Labels.N3,
-            #"Sleep stage 4": self.Labels.N3,
-            #"Sleep stage R": self.Labels.REM,
-            #"Sleep stage ?": self.Labels.UNKNOWN,
-            #"Movement time": self.Labels.N1 # TODO: This is WRONG. Find out what we do with this type of stage!
+            "0": self.Labels.N1,
+            "1": self.Labels.N2,
+            "2": self.Labels.N3,
+            "3": self.Labels.REM,
+            "4": self.Labels.UNKNOWN,
+            "5": self.Labels.Wake,
         }
     
   
@@ -35,13 +33,14 @@ class Phys(SleepdataPipeline):
     
     def channel_mapping(self):
         return {
-            #"EOG horizontal": {'ref1': self.TTRef.EL, 'ref2': self.TTRef.ER}, 
-            #"EEG Fpz-Cz": {'ref1': self.TTRef.Fpz, 'ref2': self.TTRef.Cz},
-            #"EEG Pz-Oz": {'ref1': self.TTRef.Pz, 'ref2': self.TTRef.Oz}
+            "F3-M2": {'ref1': self.TTRef.F3, 'ref2': self.TTRef.RPA}, 
+            "F4-M1": {'ref1': self.TTRef.F4, 'ref2': self.TTRef.LPA},
+            "C3-M2": {'ref1': self.TTRef.C3, 'ref2': self.TTRef.RPA},
+            "C4-M1": {'ref1': self.TTRef.C4, 'ref2': self.TTRef.LPA},
+            "O1-M2": {'ref1': self.TTRef.O1, 'ref2': self.TTRef.RPA},
+            "O2-M1": {'ref1': self.TTRef.O2, 'ref2': self.TTRef.LPA},
+            "E1-M2": {'ref1': self.TTRef.EL, 'ref2': self.TTRef.RPA}
         }
-    
-    #record = wfdb.rdrecord('sample-data/test01_00s', sampfrom=800,
-    #                       channels=[1, 3])
     
     def list_records(self, basepath):
         paths_dict = {}
@@ -73,19 +72,74 @@ class Phys(SleepdataPipeline):
             return None
 
         with h5py.File(label_path, 'r') as f:
-            print(f['data']['sleep_stages'].keys())
-            nonrem1 = f['data']['sleep_stages']['nonrem1'][()]
-            print(nonrem1.shape)
+            # Labels
+            s1 = f['data']['sleep_stages']['nonrem1'][()].flatten()
+            s2 = f['data']['sleep_stages']['nonrem2'][()].flatten()
+            s3 = f['data']['sleep_stages']['nonrem3'][()].flatten()
+            rem = f['data']['sleep_stages']['rem'][()].flatten()
+            udf = f['data']['sleep_stages']['undefined'][()].flatten()
+            w = f['data']['sleep_stages']['wake'][()].flatten()
             
-            i = 0
-            while(1):
-                first_epoch = nonrem1[0][i*5999:(i*5999)+5999]
-                print(first_epoch.shape)
-                result = np.all(first_epoch == first_epoch[0])
-                i += 1
-                print(result)
-                
+            stacked = np.stack([s1,s2,s3,rem,udf,w])
+            y = np.argmax(stacked, axis=0)
+            
+            # Data
+            
+            dic = dict()
+            
+            dataframe = r.to_dataframe()
+            print(dataframe)
+            
             exit()
+            #print(np.argmax(np.stack([s1,s2,s3,rem,udf,w]).shape, axis=0))
+            #curr = None
+            #for i in range(am):
+            #    if (s1[i] == 1):
+            #        new = 's1'
+            #    if (s2[i] == 1):
+            #        new = 's2'
+            #    if (s3[i] == 1):
+            #        new = 's3'
+            #    if (rem[i] == 1):
+            #        new = 'rem'
+            #    if (udf[i] == 1):
+            #        new = 'udf'
+            #    if (w[i] == 1):
+            #        new = 'wake'
+            #    
+            #    if curr != new:
+            #        print(i)
+            #        print((i+1)/6000)
+            #        print(new)
+            #        curr = new
+                #print(i)
+                #values = [s1c, s2c, s3c, remc, udfc, wc]
+                #val_sum = sum(values)
+                #assert val_sum == 1, 'values: {}'.format(values)
+                
+                #print(i)
+                #print([s1c, s2c, s3c, remc, udfc, wc])
+            #print(nonrem1.shape)
+            #s1 = s1.flatten()[:100000]
+            #print(s1.shape)
+            #s1 = [i for i, x in enumerate(s1) if x==1]
+            #s2 = [i for i, x in enumerate(s2) if x==1]
+            #s3 = [i for i, x in enumerate(s3) if x==1]
+            #rem = [i for i, x in enumerate(rem) if x==1]
+            #udf = [i for i, x in enumerate(udf) if x==1]
+            #w = [i for i, x in enumerate(w) if x==1]
+            
+            #print(dwe)
+
+            #i = 0
+            #while(1):
+            #    first_epoch = nonrem1[0][i*6000:(i*6000)+6000]
+            #    print(first_epoch.shape)
+            #    result = np.all(first_epoch == first_epoch[0])
+            #    i += 1
+            #    print(result)
+                
+
             #wake = f['data']['sleep_stages']['wake']
             #print(labels.shape)
             #print(nonrem1[()])
@@ -95,8 +149,5 @@ class Phys(SleepdataPipeline):
         #print(mat['val'][0])
         #mat = scipy.io.loadmat(filebase+'-arousal.mat')
         #print(mat.keys())
-
-        dataframe = r.to_dataframe()
-        print(dataframe.shape)
         
-        return 0
+        return dic, y
