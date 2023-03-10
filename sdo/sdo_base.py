@@ -106,8 +106,11 @@ class SleepdataOrg(SleepdataPipeline):
             try:
                 channel_data = data[channel]
             except ValueError:
-                print('Channel {channel} was not found in the record. Possibilities are {channels}'.format(channel=channel,
-                                                                                                           channels=data.ch_names))
+                self.log_warning('Channel {channel} was not found in the record. Possibilities are {channels}'.format(channel=channel,
+                                                                                                                      channels=data.ch_names),
+                                                                                                                      subject=None,
+                                                                                                                      record=path_to_psg)
+                                                                                                                        
                 continue
             
             first_ref = channel_data[0][0]
