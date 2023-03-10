@@ -65,7 +65,7 @@ class SleepdataOrg(SleepdataPipeline):
             labels_exist = os.path.exists(hyp_file_path)
             
             if not labels_exist:
-                warnings.warn(f"File {hyp_file_path} does not exist, skipping this record")
+                self.log_warning(f"File does not exist, skipping this record", subject=None, record=hyp_file_path)
                 continue
             
             paths_dict.setdefault(subject_number, []).append((psg_file_path, hyp_file_path))
@@ -99,16 +99,15 @@ class SleepdataOrg(SleepdataPipeline):
 
         x = dict()
         
-        data = mne.io.read_raw_edf(path_to_psg)
+        data = mne.io.read_raw_edf(path_to_psg, verbose=False)
         sample_rate = int(data.info['sfreq'])
 
         for channel in self.channel_mapping().keys():
             try:
                 channel_data = data[channel]
             except ValueError:
-                self.log_warning('Channel {channel} was not found in the record. Possibilities are {channels}'.format(channel=channel,
-                                                                                                                      channels=data.ch_names),
-                                subject=None, record=path_to_psg)
+                print('Channel {channel} was not found in the record. Possibilities are {channels}'.format(channel=channel,
+                                                                                                           channels=data.ch_names))
                 continue
             
             first_ref = channel_data[0][0]

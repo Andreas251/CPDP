@@ -22,7 +22,6 @@ class SleepdataPipeline(ABC):
         self.dataset_path = dataset_path
         self.output_path = output_path
         self.logger = LoggingModule()
-        self.logs = []
         
         if data_format == "hdf5":
             self.write_function = self.write_record_to_database_hdf5
@@ -198,14 +197,18 @@ class SleepdataPipeline(ABC):
         """
         pass
     
+    
     def log_info(self, msg, subject = None, record = None):
         self.logger.log(msg, self.dataset_name(), subject, record, EventSeverity.Info)
+    
     
     def log_warning(self, msg, subject = None, record = None):
         self.logger.log(msg, self.dataset_name(), subject, record, EventSeverity.Warning)
         
+        
     def log_error(self, msg, subject = None, record = None):
         self.logger.log(msg, self.dataset_name(), subject, record, EventSeverity.Error)
+    
     
     def __map_channels(self, dic, y_len):
         new_dict = dict()

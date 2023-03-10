@@ -57,7 +57,7 @@ class Svuh(SleepdataPipeline):
             prepend = file_path+id
             
             if os.path.isfile(prepend+".rec"):
-                self.log_info('Renamed file {} to .edf'.format(prepend+".rec")f)
+                self.log_info('Renamed file {} to .edf'.format(prepend+".rec"))
                 os.rename(prepend+".rec", prepend+".edf")
                 
             dic[id] = [(prepend+".edf", prepend+"_stage.txt")]
@@ -67,7 +67,7 @@ class Svuh(SleepdataPipeline):
     def read_psg(self, record):
         (datapath, labelpath) = record
         
-        data = mne.io.read_raw_edf(datapath)
+        data = mne.io.read_raw_edf(datapath, verbose=False)
 
         dic = dict()
         

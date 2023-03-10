@@ -72,7 +72,9 @@ class Isruc(SleepdataPipeline):
         with open(labelpath, "r") as f:
             y = list(map(lambda x: x[0], f.readlines()))
             y_trunc = y[:int(x_len/self.sample_rate()/30)]
-            print(len(y)-len(y_trunc))
-        
+            trunc_len = len(y)-len(y_trunc)
+            if trunc_len > 30:
+                self.log_warning(f"Length of truncated y was: {trunc_len}.", subject=None, record=labelpath)
+            
         return x, y_trunc
         

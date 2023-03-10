@@ -63,7 +63,7 @@ class Base_Sedf(SleepdataPipeline):
         y = [] 
         
         # region x
-        data = mne.io.read_raw_edf(psg_path)
+        data = mne.io.read_raw_edf(psg_path, verbose=False)
         sample_rate = data.info["sfreq"]
             
         for channel in self.channel_mapping().keys():
