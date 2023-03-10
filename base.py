@@ -7,8 +7,6 @@ from pathlib import Path
 from h5py import File
 from enum import Enum, auto, IntEnum
 
-# TODO
-# Fix sedf
 
 class SleepdataPipeline(ABC):
     def __init__(
@@ -265,7 +263,7 @@ class SleepdataPipeline(ABC):
         file_path = f"{output_basepath}{self.dataset_name()}.hdf5"
         
         with File(file_path, "a") as f:
-            grp_subject = f.create_group(f"{subject_number}")
+            grp_subject = f.require_group(f"{subject_number}")
             subgrp_record = grp_subject.create_group(f"{record_number}")
             
             subsubgrp_psg = subgrp_record.create_group("psg")

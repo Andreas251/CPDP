@@ -32,14 +32,14 @@ class Isruc(SleepdataPipeline):
     
     def channel_mapping(self):
         return {
-            "F3_A2": {'ref1': self.TTRef.F3, 'ref2': self.TTRef.A2},
-            "C3_A2": {'ref1': self.TTRef.C3, 'ref2': self.TTRef.A2},
-            "F4_A1": {'ref1': self.TTRef.F4, 'ref2': self.TTRef.A1},
-            "C4_A1": {'ref1': self.TTRef.C4, 'ref2': self.TTRef.A1},
-            "O1_A2": {'ref1': self.TTRef.O1, 'ref2': self.TTRef.A2},
-            "O2_A1": {'ref1': self.TTRef.O2, 'ref2': self.TTRef.A1},
-            "ROC_A1": {'ref1': self.TTRef.ER, 'ref2': self.TTRef.A1},
-            "LOC_A2": {'ref1': self.TTRef.EL, 'ref2': self.TTRef.A2},
+            "F3_A2": self.Mapping(self.TTRef.F3, self.TTRef.RPA),
+            "C3_A2": self.Mapping(self.TTRef.C3, self.TTRef.RPA),
+            "F4_A1": self.Mapping(self.TTRef.F4, self.TTRef.LPA),
+            "C4_A1": self.Mapping(self.TTRef.C4, self.TTRef.LPA),
+            "O1_A2": self.Mapping(self.TTRef.O1, self.TTRef.RPA),
+            "O2_A1": self.Mapping(self.TTRef.O2, self.TTRef.LPA),
+            "ROC_A1": self.Mapping(self.TTRef.ER, self.TTRef.LPA),
+            "LOC_A2": self.Mapping(self.TTRef.EL, self.TTRef.RPA),
         }
     
     
@@ -64,13 +64,15 @@ class Isruc(SleepdataPipeline):
         
         mat = scipy.io.loadmat(datapath)
         for key in self.channel_mapping().keys():
+            # 30 epochs of data was removed due to noise resulting in more labels
             chnl = np.array(mat[key]).flatten()
-            x[key] = chnl
+            x_len = len(chnl)
+            x[key] = (chnl, self.sample_rate())
             
         with open(labelpath, "r") as f:
             y = list(map(lambda x: x[0], f.readlines()))
-            
-        return x, y
-    
-    
+            y_trunc = y[:int(x_len/self.sample_rate()/30)]
+            print(len(y)-len(y_trunc))
+        
+        return x, y_trunc
         
