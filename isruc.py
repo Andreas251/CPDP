@@ -49,9 +49,14 @@ class Isruc(SleepdataPipeline):
         record_paths = os.listdir(basepath)
         
         for path in record_paths:
+            # Fucking ugly and hacky, delete ASAP
+            if "ipynb_checkpoints" in path:
+                continue
+            
             recordpath = basepath+path+'/'+path
             datapath = recordpath+".mat"
             labelpath = recordpath+'_'+"1.txt"
+            
             paths_dict[path] = [(datapath, labelpath)]
         
         return paths_dict
@@ -73,8 +78,9 @@ class Isruc(SleepdataPipeline):
             y = list(map(lambda x: x[0], f.readlines()))
             y_trunc = y[:int(x_len/self.sample_rate()/30)]
             trunc_len = len(y)-len(y_trunc)
-            if trunc_len > 30:
+            if trunc_len > 31:
                 self.log_warning(f"Length of truncated y was: {trunc_len}.", subject=None, record=labelpath)
+                return None
             
         return x, y_trunc
         

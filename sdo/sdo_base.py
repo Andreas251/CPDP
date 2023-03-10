@@ -77,12 +77,17 @@ class SleepdataOrg(SleepdataPipeline):
     # Override this if needed
     def slice_channel(self, x, y_len, sample_rate):
         epoch_diff = (len(x)/sample_rate/30 - y_len)
-
-        assert epoch_diff < 1.0, "Epoch diff can't be bigger than 1. Sample_rate might be off"
-        assert epoch_diff >= 0, "Epoch diff can't be negative. You have more labels than you have data"
+        
+        if epoch_diff < 0:
+            msg = "Epoch diff can't be negative. You have more labels than you have data"
+            raise Exception(msg)
+        elif epoch_diff > 1.0:
+            msg = "Epoch diff can't be bigger than 1. Sample_rate might be off"
+            raise Exception(msg)
         
         x_len = y_len*sample_rate*30
         return x[:x_len]
+    
     
     def read_psg(self, record):
         path_to_psg, path_to_hyp = record
@@ -101,16 +106,14 @@ class SleepdataOrg(SleepdataPipeline):
         
         data = mne.io.read_raw_edf(path_to_psg, verbose=False)
         sample_rate = int(data.info['sfreq'])
-
+        
+        not_found_chnls = []
+        
         for channel in self.channel_mapping().keys():
             try:
                 channel_data = data[channel]
             except ValueError:
-                self.log_warning('Channel {channel} was not found in the record. Possibilities are {channels}'.format(channel=channel,
-                                                                                                                      channels=data.ch_names),
-                                                                                                                      subject=None,
-                                                                                                                      record=path_to_psg)
-                                                                                                                        
+                not_found_chnls.append(channel)                                                                         
                 continue
             
             first_ref = channel_data[0][0]
@@ -121,12 +124,21 @@ class SleepdataOrg(SleepdataPipeline):
             
             relative_channel_data = first_ref - second_ref # TODO: Is is correct?
             
-            final_channel_data = self.slice_channel(relative_channel_data, len(y), sample_rate)
+            try:
+                final_channel_data = self.slice_channel(relative_channel_data, len(y), sample_rate)
+            except Exception as msg:
+                self.log_error(msg, subject=None, record=path_to_psg)
+                return None
             
             assert len(final_channel_data) == len(y)*sample_rate*30, f"Channel length was {len(final_channel_data)}, but according to the number of labels it should be {len(y)*sample_rate*30}. Check the sample rate or override slice_channels if needed."
             
             x[channel] = (final_channel_data, sample_rate)
         
         assert len(x) > 0, "No data detected"
+        
+        if len(not_found_chnls) > 0:
+            self.log_warning('Did not find channels: {channels} was not found in the record. Possibilities are {present}'.format(channels=not_found_chnls,
+                                                                                                                                  present=data.ch_names),
+                             record=path_to_psg)
         
         return x, y

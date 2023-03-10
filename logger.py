@@ -13,7 +13,7 @@ class EventSeverity(Enum):
 class LoggingModule:
     def __init__(self):
         self.start_time = datetime.datetime.now() 
-        self.loggers = [CmdLogger(), TxtLogger("/home/alec/repo/SleepDataPipeline/logs")]
+        self.loggers = [CmdLogger(), TxtLogger("/home/alec/repos/SleepDataPipeline/logs")]
     
     def log(self, msg, dataset, subject, record, severity):
         msg = 'Log [{sev}]: {msg}. [Dataset]={d} [Subject]={s} [Record]={r}'.format(sev=severity,

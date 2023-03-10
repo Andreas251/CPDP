@@ -30,7 +30,8 @@ class Svuh(SleepdataPipeline):
             "4": self.Labels.N3,
             "5": self.Labels.N3, # Stage 4 in SVUH is same as N3
             "6": self.Labels.UNKNOWN,
-            "7": self.Labels.UNKNOWN
+            "7": self.Labels.UNKNOWN,
+            "8": self.Labels.UNKNOWN
         }
     
     

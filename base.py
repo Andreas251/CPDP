@@ -35,6 +35,9 @@ class SleepdataPipeline(ABC):
             assert os.path.exists(self.dataset_path), f"Path {self.dataset_path} does not exist"
             
             paths_dict = self.list_records(basepath=self.dataset_path)
+            
+            self.__check_paths(paths_dict)
+            
             self.port_data(write_function=self.write_function, paths_dict=paths_dict)
     
     
@@ -209,6 +212,13 @@ class SleepdataPipeline(ABC):
     def log_error(self, msg, subject = None, record = None):
         self.logger.log(msg, self.dataset_name(), subject, record, EventSeverity.Error)
     
+    def __check_paths(self, paths_dict):
+        for k in paths_dict.keys():
+            record_list = paths_dict[k]
+            
+            for r in record_list:
+                datapath, labelpath = r
+                assert os.path.exists(datapath) and os.path.exists(labelpath), f"Datapath: {datapath}\nLabelpath: {labelpath}"
     
     def __map_channels(self, dic, y_len):
         new_dict = dict()
