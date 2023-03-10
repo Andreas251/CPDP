@@ -47,7 +47,8 @@ class Svuh(SleepdataPipeline):
         basepath = basepath + 'files/'
         file_base = "ucddb"
         file_path = basepath+'/'+file_base
-        subject_ids = ["002","003","005","006","007","008","009","010","011","012","013","014","015","017","018","019",
+        subject_ids = ["002","003","005","006","007","008","009","010",
+                       "011","012","013","014","015","017","018","019",
                       "020","021","022","023","024","025","026","027","028"]
         
         dic = dict()
@@ -56,7 +57,7 @@ class Svuh(SleepdataPipeline):
             prepend = file_path+id
             
             if os.path.isfile(prepend+".rec"):
-                print("Renamed files to .edf")
+                self.log_info('Renamed file {} to .edf'.format(prepend+".rec")f)
                 os.rename(prepend+".rec", prepend+".edf")
                 
             dic[id] = [(prepend+".edf", prepend+"_stage.txt")]
