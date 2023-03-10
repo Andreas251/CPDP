@@ -6,6 +6,7 @@ import pyarrow.parquet as pq
 from pathlib import Path
 from h5py import File
 from enum import Enum, auto, IntEnum
+from .logger import LoggingModule, EventSeverity
 
 # TODO
 # Fix sedf
@@ -22,13 +23,15 @@ class SleepdataPipeline(ABC):
         self.max_num_subjects = max_num_subjects
         self.dataset_path = dataset_path
         self.output_path = output_path
+        self.logger = LoggingModule()
+        self.logs = []
         
         if data_format == "hdf5":
             self.write_function = self.write_record_to_database_hdf5
         elif data_format == "parquet":
             self.write_function = self.write_record_to_database_parquet
         else:
-            print("Invalid data format. Must be one of [hdf5, parquet].")
+            self.log_error("Invalid data format. Must be one of [hdf5, parquet].")
             exit(1)
         
         if port_on_init:
@@ -197,6 +200,15 @@ class SleepdataPipeline(ABC):
         """
         pass
     
+    def log_info(self, msg, subject = None, record = None):
+        self.logger.log(msg, self.dataset_name(), subject, record, EventSeverity.Info)
+    
+    def log_warning(self, msg, subject = None, record = None):
+        self.logger.log(msg, self.dataset_name(), subject, record, EventSeverity.Warning)
+        
+    def log_error(self, msg, subject = None, record = None):
+        self.logger.log(msg, self.dataset_name(), subject, record, EventSeverity.Error)
+    
     def __map_channels(self, dic, y_len):
         new_dict = dict()
 
@@ -276,6 +288,7 @@ class SleepdataPipeline(ABC):
                 subsubgrp_psg.create_dataset(channel_name, data=channel_data)
             
             subgrp_record.create_dataset("hypnogram", data=y)
+            self.log_info('Successfully wrote record to hdf5 file', subject_number, record_number)
         
         
     def port_data(self, write_function, paths_dict): # TODO: Test
@@ -284,7 +297,7 @@ class SleepdataPipeline(ABC):
         exists = os.path.exists(file_path)
         
         if exists:
-            print("HDF5 file already exists. Removing it")
+            self.log_warning("HDF5 file already exists. Removing it")
             os.remove(file_path)
         
         for subject_number in list(paths_dict.keys())[:self.max_num_subjects]:
@@ -294,6 +307,7 @@ class SleepdataPipeline(ABC):
                 psg = self.read_psg(record)
                 
                 if psg == None:
+                    self.log_error("PSG could not be read, skipping it", subject_number, record)
                     continue
                 
                 x, y = psg

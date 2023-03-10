@@ -57,7 +57,7 @@ class Svuh(SleepdataPipeline):
             prepend = file_path+id
             
             if os.path.isfile(prepend+".rec"):
-                print("Renamed files to .edf")
+                self.log_info('Renamed file {} to .edf'.format(prepend+".rec"))
                 os.rename(prepend+".rec", prepend+".edf")
                 
             dic[id] = [(prepend+".edf", prepend+"_stage.txt")]
