@@ -48,6 +48,9 @@ class SleepdataOrg(SleepdataPipeline):
         psg_files = []
         
         for dir, subdir, filenames in os.walk(psg_path):
+            # On windows os.walk gives backslashes, so we need to replace them
+            dir = dir.replace('\\','/')
+
             for file in filenames:
                 psg_files.append(dir + "/" + file)
                 

@@ -56,13 +56,15 @@ class Base_DOD(SleepdataPipeline):
                 record_no = file.split(".")[0]
                 record_path = f"{dir}/{file}"
                 
-                paths_dict[record_no] = [record_path]
+                paths_dict[record_no] = [(record_path, )]
                 
         return paths_dict
     
     
     def read_psg(self, record):
         x = dict()
+
+        record = record[0]
         
         with File(record, "r") as h5:
             signals = h5.get("signals")

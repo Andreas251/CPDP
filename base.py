@@ -217,8 +217,8 @@ class SleepdataPipeline(ABC):
             record_list = paths_dict[k]
             
             for r in record_list:
-                datapath, labelpath = r
-                assert os.path.exists(datapath) and os.path.exists(labelpath), f"Datapath: {datapath}\nLabelpath: {labelpath}"
+                for file_path in r:
+                    assert os.path.exists(file_path), f"Datapath: {file_path}"
     
     def __map_channels(self, dic, y_len):
         new_dict = dict()
