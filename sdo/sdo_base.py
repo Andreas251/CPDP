@@ -48,6 +48,9 @@ class SleepdataOrg(SleepdataPipeline):
         psg_files = []
         
         for dir, subdir, filenames in os.walk(psg_path):
+            # On windows os.walk gives backslashes, so we need to replace them
+            dir = dir.replace('\\','/')
+
             for file in filenames:
                 psg_files.append(dir + "/" + file)
                 
@@ -65,7 +68,7 @@ class SleepdataOrg(SleepdataPipeline):
             labels_exist = os.path.exists(hyp_file_path)
             
             if not labels_exist:
-                warnings.warn(f"File {hyp_file_path} does not exist, skipping this record")
+                self.log_warning(f"File does not exist, skipping this record", subject=None, record=hyp_file_path)
                 continue
             
             paths_dict.setdefault(subject_number, []).append((psg_file_path, hyp_file_path))
@@ -77,12 +80,17 @@ class SleepdataOrg(SleepdataPipeline):
     # Override this if needed
     def slice_channel(self, x, y_len, sample_rate):
         epoch_diff = (len(x)/sample_rate/30 - y_len)
-
-        assert epoch_diff < 1.0, "Epoch diff can't be bigger than 1. Sample_rate might be off"
-        assert epoch_diff >= 0, "Epoch diff can't be negative. You have more labels than you have data"
+        
+        if epoch_diff < 0:
+            msg = "Epoch diff can't be negative. You have more labels than you have data"
+            raise Exception(msg)
+        elif epoch_diff > 1.0:
+            msg = "Epoch diff can't be bigger than 1. Sample_rate might be off"
+            raise Exception(msg)
         
         x_len = y_len*sample_rate*30
         return x[:x_len]
+    
     
     def read_psg(self, record):
         path_to_psg, path_to_hyp = record
@@ -99,42 +107,37 @@ class SleepdataOrg(SleepdataPipeline):
 
         x = dict()
         
-        data = mne.io.read_raw_edf(path_to_psg)
-        
+        data = mne.io.read_raw_edf(path_to_psg, verbose=False)
         sample_rate = int(data.info['sfreq'])
-
+        
+        not_found_chnls = []
+        
         for channel in self.channel_mapping().keys():
             try:
                 channel_data = data[channel]
             except ValueError:
-                self.log_warning('Channel {channel} was not found in the record. Possibilities are {channels}'.format(channel=channel,
-                                                                                                                      channels=data.ch_names),
-                                subject=None, record=path_to_psg)
+                not_found_chnls.append(channel)                                                                         
                 continue
-            
-            #print(channel)
-            #print(channel_data[0][0][256*7:(256*7)+100])
-            #print(channel_data[1][256*7:(256*7)+100])
-            #exit()
+
             first_ref = channel_data[0][0]
             
-            #f = 0
-            #s = 257
-            #second_ref = channel_data[1]
-            #print(first_ref[f:s])
-            #print(second_ref[f:s])
-            
-            #assert len(first_ref) == len(second_ref)
-            
-            relative_channel_data = first_ref # TODO: Is is correct?
-            
-            final_channel_data = self.slice_channel(relative_channel_data, len(y), sample_rate)
-            #print(len(final_channel_data))
-            #print(final_channel_data[f:s])
-            #exit()
+            relative_channel_data = first_ref
+
+            try:
+                final_channel_data = self.slice_channel(relative_channel_data, len(y), sample_rate)
+            except Exception as msg:
+                self.log_error(msg, subject=None, record=path_to_psg)
+                return None
+
             assert len(final_channel_data) == len(y)*sample_rate*30, f"Channel length was {len(final_channel_data)}, but according to the number of labels it should be {len(y)*sample_rate*30}. Check the sample rate or override slice_channels if needed."
             
             x[channel] = (final_channel_data, sample_rate)
         
         assert len(x) > 0, "No data detected"
+        
+        if len(not_found_chnls) > 0:
+            self.log_warning('Did not find channels: {channels} was not found in the record. Possibilities are {present}'.format(channels=not_found_chnls,
+                                                                                                                                  present=data.ch_names),
+                             record=path_to_psg)
+            
         return x, y

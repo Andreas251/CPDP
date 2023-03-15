@@ -32,14 +32,14 @@ class Dcsm(SleepdataPipeline):
     
     def channel_mapping(self):
         return {
-            "E1-M2": {'ref1': self.TTRef.EL, 'ref2': self.TTRef.RPA},
-            "E2-M2": {'ref1': self.TTRef.ER, 'ref2': self.TTRef.RPA},
-            "C3-M2": {'ref1': self.TTRef.C3, 'ref2': self.TTRef.RPA},
-            "C4-M1": {'ref1': self.TTRef.C4, 'ref2': self.TTRef.LPA},
-            "F3-M2": {'ref1': self.TTRef.F3, 'ref2': self.TTRef.RPA},
-            "F4-M1": {'ref1': self.TTRef.F4, 'ref2': self.TTRef.LPA},
-            "O1-M2": {'ref1': self.TTRef.O1, 'ref2': self.TTRef.RPA},
-            "O2-M1": {'ref1': self.TTRef.O2, 'ref2': self.TTRef.LPA}
+            "E1-M2": self.Mapping(self.TTRef.EL, self.TTRef.RPA),
+            "E2-M2": self.Mapping(self.TTRef.ER, self.TTRef.RPA),
+            "C3-M2": self.Mapping(self.TTRef.C3, self.TTRef.RPA),
+            "C4-M1": self.Mapping(self.TTRef.C4, self.TTRef.LPA),
+            "F3-M2": self.Mapping(self.TTRef.F3, self.TTRef.RPA),
+            "F4-M1": self.Mapping(self.TTRef.F4, self.TTRef.LPA),
+            "O1-M2": self.Mapping(self.TTRef.O1, self.TTRef.RPA),
+            "O2-M1": self.Mapping(self.TTRef.O2, self.TTRef.LPA)
         }
     
     
@@ -69,7 +69,7 @@ class Dcsm(SleepdataPipeline):
             for channel in self.channel_mapping().keys():
                 channel_data = h5channels[channel][:]
                 
-                x[channel] = channel_data
+                x[channel] = (channel_data, self.sample_rate()) # We are assuming sample rate is same across channels
         
         with open(hyp_path) as f:
             hypnogram = f.readlines()

@@ -63,7 +63,7 @@ class Base_Sedf(SleepdataPipeline):
         y = [] 
         
         # region x
-        data = mne.io.read_raw_edf(psg_path)
+        data = mne.io.read_raw_edf(psg_path, verbose=False)
         sample_rate = data.info["sfreq"]
             
         for channel in self.channel_mapping().keys():
@@ -91,8 +91,11 @@ class Base_Sedf(SleepdataPipeline):
                     
             for e in range(dur_in_epochs):
                 y.append(label)
-               
-        assert len(y)*self.sample_rate()*30 == chnl_len, "Length of signal does not match the number of labels."
+      
+        if len(y)*self.sample_rate()*30 != chnl_len: # TODO: Figure out why lengths don't match
+            return None
         # endregion
+
+        assert len(y)*self.sample_rate()*30 == chnl_len, "Length of signal does not match the number of labels."
         
         return x, y

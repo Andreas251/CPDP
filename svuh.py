@@ -30,7 +30,8 @@ class Svuh(SleepdataPipeline):
             "4": self.Labels.N3,
             "5": self.Labels.N3, # Stage 4 in SVUH is same as N3
             "6": self.Labels.UNKNOWN,
-            "7": self.Labels.UNKNOWN
+            "7": self.Labels.UNKNOWN,
+            "8": self.Labels.UNKNOWN
         }
     
     
@@ -67,7 +68,7 @@ class Svuh(SleepdataPipeline):
     def read_psg(self, record):
         (datapath, labelpath) = record
         
-        data = mne.io.read_raw_edf(datapath)
+        data = mne.io.read_raw_edf(datapath, verbose=False)
 
         dic = dict()
         
@@ -79,6 +80,6 @@ class Svuh(SleepdataPipeline):
         for channel in self.channel_mapping().keys():
             channel_data = data[channel]
             relative_channel_data = channel_data[0][0] - channel_data[1]
-            dic[channel] = relative_channel_data[:x_len]
+            dic[channel] = (relative_channel_data[:x_len], self.sample_rate())
         
         return dic, y

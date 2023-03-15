@@ -13,7 +13,7 @@ class EventSeverity(Enum):
 class LoggingModule:
     def __init__(self):
         self.start_time = datetime.datetime.now() 
-        self.loggers = [CmdLogger(), TxtLogger("/home/jose/repo/SleepDataPipeline/logs")]
+        self.loggers = [CmdLogger(), TxtLogger("./SleepDataPipeline/logs")]
     
     def log(self, msg, dataset, subject, record, severity):
         msg = 'Log [{sev}]: {msg}. [Dataset]={d} [Subject]={s} [Record]={r}'.format(sev=severity,
@@ -25,15 +25,18 @@ class LoggingModule:
         for l in self.loggers:
             l.log_message(msg, dataset, severity, self.start_time)
 
+
 class Logger(ABC):        
     @abstractmethod
     def log_message(self, msg, dataset, severity, run_index):
         pass
 
+
 class CmdLogger(Logger):
     def log_message(self, msg, dataset, severity, run_index):
         print(msg)
     
+
 class TxtLogger(Logger):
     def __init__(self, path):
         self.path = path
@@ -42,7 +45,7 @@ class TxtLogger(Logger):
         if severity == EventSeverity.Info:
             return
         
-        with open('{p}/{i}-{d}.txt'.format(p=self.path,
-                                           i=run_index,
-                                           d=dataset), 'a') as f:
+        log_path = f"{self.path}/{run_index}-{dataset}.txt".replace(":", ".")
+
+        with open(log_path, "a") as f:
             f.write(msg+'\n')

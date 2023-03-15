@@ -8,8 +8,6 @@ from h5py import File
 from enum import Enum, auto, IntEnum
 from .logger import LoggingModule, EventSeverity
 
-# TODO
-# Fix sedf
 
 class SleepdataPipeline(ABC):
     def __init__(
@@ -24,7 +22,6 @@ class SleepdataPipeline(ABC):
         self.dataset_path = dataset_path
         self.output_path = output_path
         self.logger = LoggingModule()
-        self.logs = []
         
         if data_format == "hdf5":
             self.write_function = self.write_record_to_database_hdf5
@@ -38,6 +35,9 @@ class SleepdataPipeline(ABC):
             assert os.path.exists(self.dataset_path), f"Path {self.dataset_path} does not exist"
             
             paths_dict = self.list_records(basepath=self.dataset_path)
+            
+            self.__check_paths(paths_dict)
+            
             self.port_data(write_function=self.write_function, paths_dict=paths_dict)
     
     
@@ -200,14 +200,25 @@ class SleepdataPipeline(ABC):
         """
         pass
     
+    
     def log_info(self, msg, subject = None, record = None):
         self.logger.log(msg, self.dataset_name(), subject, record, EventSeverity.Info)
+    
     
     def log_warning(self, msg, subject = None, record = None):
         self.logger.log(msg, self.dataset_name(), subject, record, EventSeverity.Warning)
         
+        
     def log_error(self, msg, subject = None, record = None):
         self.logger.log(msg, self.dataset_name(), subject, record, EventSeverity.Error)
+    
+    def __check_paths(self, paths_dict):
+        for k in paths_dict.keys():
+            record_list = paths_dict[k]
+            
+            for r in record_list:
+                for file_path in r:
+                    assert os.path.exists(file_path), f"Datapath: {file_path}"
     
     def __map_channels(self, dic, y_len):
         new_dict = dict()
