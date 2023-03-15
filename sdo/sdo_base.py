@@ -100,6 +100,7 @@ class SleepdataOrg(SleepdataPipeline):
         x = dict()
         
         data = mne.io.read_raw_edf(path_to_psg)
+        
         sample_rate = int(data.info['sfreq'])
 
         for channel in self.channel_mapping().keys():
@@ -111,20 +112,29 @@ class SleepdataOrg(SleepdataPipeline):
                                 subject=None, record=path_to_psg)
                 continue
             
+            #print(channel)
+            #print(channel_data[0][0][256*7:(256*7)+100])
+            #print(channel_data[1][256*7:(256*7)+100])
+            #exit()
             first_ref = channel_data[0][0]
             
-            second_ref = channel_data[1]
+            #f = 0
+            #s = 257
+            #second_ref = channel_data[1]
+            #print(first_ref[f:s])
+            #print(second_ref[f:s])
             
-            assert len(first_ref) == len(second_ref)
+            #assert len(first_ref) == len(second_ref)
             
-            relative_channel_data = first_ref - second_ref # TODO: Is is correct?
+            relative_channel_data = first_ref # TODO: Is is correct?
             
             final_channel_data = self.slice_channel(relative_channel_data, len(y), sample_rate)
-            
+            #print(len(final_channel_data))
+            #print(final_channel_data[f:s])
+            #exit()
             assert len(final_channel_data) == len(y)*sample_rate*30, f"Channel length was {len(final_channel_data)}, but according to the number of labels it should be {len(y)*sample_rate*30}. Check the sample rate or override slice_channels if needed."
             
             x[channel] = (final_channel_data, sample_rate)
         
         assert len(x) > 0, "No data detected"
-        
         return x, y

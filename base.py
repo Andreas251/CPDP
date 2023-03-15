@@ -314,7 +314,7 @@ class SleepdataPipeline(ABC):
                 
                 x = self.__map_channels(x, len(y))
                 y = self.__map_labels(y)
-         
+                
                 write_function(
                     f"{self.output_path}/",
                     subject_number,
