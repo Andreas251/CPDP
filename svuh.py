@@ -79,7 +79,7 @@ class Svuh(SleepdataPipeline):
         
         for channel in self.channel_mapping().keys():
             channel_data = data[channel]
-            relative_channel_data = channel_data[0][0] - channel_data[1]
+            relative_channel_data = channel_data[0][0]
             dic[channel] = (relative_channel_data[:x_len], self.sample_rate())
         
         return dic, y
