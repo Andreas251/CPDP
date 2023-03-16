@@ -11,7 +11,7 @@ from .dcsm import Dcsm
 from .sedf.sedf_sc_usleep import Sedf_SC_USleep
 from .sedf.sedf_sc_physionet import Sedf_SC_PhysioNet
 from .isruc import Isruc
-from .dod.dod_o import DOD_O
-from .dod.dod_h import DOD_H
+from .dod.dod_o import Dod_o
+from .dod.dod_h import Dod_h
 from .svuh import Svuh
 from .phys import Phys
