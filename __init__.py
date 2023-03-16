@@ -6,6 +6,7 @@ from .sdo.cfs import Cfs
 from .sdo.mesa import Mesa
 from .sdo.homepap import Homepap
 from .sdo.mros import Mros
+from .sdo.sof import Sof
 from .dcsm import Dcsm
 from .sedf.sedf_sc_usleep import Sedf_SC_USleep
 from .sedf.sedf_sc_physionet import Sedf_SC_PhysioNet
