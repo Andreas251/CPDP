@@ -13,7 +13,7 @@ class EventSeverity(Enum):
 class LoggingModule:
     def __init__(self):
         self.start_time = datetime.datetime.now() 
-        self.loggers = [CmdLogger(), TxtLogger("./SleepDataPipeline/logs")]
+        self.loggers = [CmdLogger()] #, TxtLogger("./SleepDataPipeline/logs")] #TODO: Hardcoded path does not work
     
     def log(self, msg, dataset, subject, record, severity):
         msg = 'Log [{sev}]: {msg}. [Dataset]={d} [Subject]={s} [Record]={r}'.format(sev=severity,
@@ -46,6 +46,9 @@ class TxtLogger(Logger):
             return
         
         log_path = f"{self.path}/{run_index}-{dataset}.txt".replace(":", ".")
+        print(log_path)
+        print(self.path)
+        exit()
 
         with open(log_path, "a") as f:
             f.write(msg+'\n')
