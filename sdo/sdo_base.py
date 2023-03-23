@@ -74,12 +74,12 @@ class SleepdataOrg(SleepdataPipeline):
             paths_dict.setdefault(subject_number, []).append((psg_file_path, hyp_file_path))
         
         assert len(paths_dict) > 0, "No filepaths detected"
-        
+
         return paths_dict
     
     # Override this if needed
     def slice_channel(self, x, y_len, sample_rate):
-        epoch_diff = (len(x)/sample_rate/30 - y_len)
+        epoch_diff = (len(x)/sample_rate/30) - y_len
         
         if epoch_diff < 0:
             msg = "Epoch diff can't be negative. You have more labels than you have data"
@@ -89,6 +89,7 @@ class SleepdataOrg(SleepdataPipeline):
             raise Exception(msg)
         
         x_len = y_len*sample_rate*30
+        
         return x[:x_len]
     
     
@@ -101,27 +102,26 @@ class SleepdataOrg(SleepdataPipeline):
         root = tree.getroot()
             
         sleep_stages = root.find("SleepStages")
-        
+
         for stage in sleep_stages:
             y.append(stage.text)
-
+            
         x = dict()
         
         data = mne.io.read_raw_edf(path_to_psg, verbose=False)
+
         sample_rate = int(data.info['sfreq'])
-        
+
         not_found_chnls = []
         
         for channel in self.channel_mapping().keys():
             try:
-                channel_data = data[channel]
+                channel_data = data.get_data(channel)
             except ValueError:
                 not_found_chnls.append(channel)                                                                         
                 continue
-
-            first_ref = channel_data[0][0]
             
-            relative_channel_data = first_ref
+            relative_channel_data = channel_data[0]
 
             try:
                 final_channel_data = self.slice_channel(relative_channel_data, len(y), sample_rate)

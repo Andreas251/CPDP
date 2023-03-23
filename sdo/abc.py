@@ -1,5 +1,4 @@
 import os
-import mne
 import xml.etree.ElementTree as ET
 
 from .sdo_base import SleepdataOrg

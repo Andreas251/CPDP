@@ -1,6 +1,8 @@
 import os
 from abc import ABC, abstractmethod
 from scipy.signal import resample_poly
+from sklearn.preprocessing import RobustScaler
+import numpy as np
 import pyarrow as pa
 import pyarrow.parquet as pq
 from pathlib import Path
@@ -236,7 +238,10 @@ class SleepdataPipeline(ABC):
             data, sample_rate = dic[key]
             
             assert len(data) == y_len*sample_rate*30, "Length of data does not match the length of labels"
-            
+
+            data = self.scale_channel(data)
+            data = self.clip_channel(data)
+
             new_dict[new_key] = self.resample_channel(data,
                                                       output_rate=128,
                                                       source_sample_rate=sample_rate) # TODO: Test that resampling works
@@ -247,6 +252,29 @@ class SleepdataPipeline(ABC):
     def __map_labels(self, labels):
         return list(map(lambda x: self.label_mapping()[x], labels))
     
+    def clip_channel(self, chnl, min_max_times_global_iqr = 20):
+        #https://github.com/perslev/psg-utils/blob/main/psg_utils/preprocessing/quality_control_funcs.py
+        iqr = np.subtract(*np.percentile(chnl, [75, 25]))
+        
+        threshold = iqr * min_max_times_global_iqr
+
+        clipped = np.clip(chnl, -threshold, threshold)
+        
+        return clipped
+    
+    def scale_channel(self, chnl):
+        #https://github.com/perslev/psg-utils/blob/main/psg_utils/preprocessing/scaling.py
+        chnl = np.reshape(chnl, (-1,1))
+
+        assert len(chnl.shape) == 2 and chnl.shape[1] == 1
+
+        transformer = RobustScaler().fit(chnl)
+        
+        scaled = transformer.transform(chnl).flatten()
+        
+        assert len(scaled.shape) == 1
+        
+        return scaled
     
     def resample_channel(self, channel, output_rate, source_sample_rate):
         """
