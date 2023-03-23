@@ -42,10 +42,10 @@ class Phys(SleepdataPipeline):
         for subject in os.listdir(basepath):
             filebase = basepath+subject+'/'+subject
             
-            data_path = filebase
+            data_path = filebase+'.hea'
             label_path = filebase+'-arousal.mat'
             
-            exists = os.path.exists(label_path) and os.path.exists(data_path+'.hea')
+            exists = os.path.exists(label_path) and os.path.exists(data_path)
             
             if not exists:
                 self.log_warning('The record did not exist', subject)
@@ -61,6 +61,7 @@ class Phys(SleepdataPipeline):
         data_path, label_path = record
         
         try:
+            data_path = data_path.rstrip('.hea')
             r = wfdb.rdrecord(data_path)
         except ValueError:
             self.log_error("Could not read data file", subject=None, record=datapath)
