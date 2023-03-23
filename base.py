@@ -18,12 +18,13 @@ class SleepdataPipeline(ABC):
         dataset_path, 
         output_path, 
         port_on_init=True, 
-        data_format="hdf5"
+        data_format="hdf5",
+        logging_path = "./SleepDataPipeline/logs"
     ):
         self.max_num_subjects = max_num_subjects
         self.dataset_path = dataset_path
         self.output_path = output_path
-        self.logger = LoggingModule()
+        self.logger = LoggingModule(logging_path)
         
         if data_format == "hdf5":
             self.write_function = self.write_record_to_database_hdf5
