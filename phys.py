@@ -5,7 +5,7 @@ import h5py
 
 import scipy.io
 import numpy as np
-
+import torch
 
 from .base import SleepdataPipeline
 
@@ -64,7 +64,7 @@ class Phys(SleepdataPipeline):
             data_path = data_path.rstrip('.hea')
             r = wfdb.rdrecord(data_path)
         except ValueError:
-            self.log_error("Could not read data file", subject=None, record=datapath)
+            self.log_error("Could not read data file", subject=None, record=data_path)
             return None
 
         with h5py.File(label_path, 'r') as f:
@@ -76,11 +76,18 @@ class Phys(SleepdataPipeline):
             udf = f['data']['sleep_stages']['undefined'][()].flatten()
             w = f['data']['sleep_stages']['wake'][()].flatten()
             
+            #The labels are boolean masks for every sample in the signal
+            #We stack these together
             stacked = np.stack([s1,s2,s3,rem,udf,w])
+            
+            #Since only one of the masks is true for a given point in the signal, we can argmax it
             y = np.argmax(stacked, axis=0)
+            
+            #The masks are always the same value for 6000 samples in a row, because samplerate=200 --> 200*30=6000
+            #So we take every 6000th value in the original array and get the final labels. XD OMEGALUL
             y = y[0::5999]
             
-            # Theres always a label for an incomplete epoch of data 
+            # Theres always a label for an incomplete epoch of data, so we remove it
             y = y[:-1]
             
         # Data    
@@ -90,9 +97,14 @@ class Phys(SleepdataPipeline):
         for ch in self.channel_mapping().keys():
             data = dataframe[ch].to_numpy()
             label_len = len(y)*sample_rate*30
+            
+            if len(data) < label_len:
+                self.log_error("Not enough data for the amount of labels", subject=None, record=data_path)
+                return None
+            
             data = data[:label_len]
             
-            assert len(data) == label_len
+            assert len(data) == label_len, f"Datalength: {len(data)}, label length: {label_len}"
             
             dic[ch] = (data, sample_rate)
             

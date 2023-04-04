@@ -153,6 +153,10 @@ class SleepdataPipeline(ABC):
         EL = auto()
         ER = auto()
         
+        # Computed linked Ear and Linked Ear Reference. May be rare, and so far is only in MASS. Can only find this article describing it: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5479869/
+        CLE = auto()
+        LER = auto()
+        
         
         def __str__(self):
             return self.name

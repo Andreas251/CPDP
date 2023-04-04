@@ -15,3 +15,5 @@ from .dod.dod_o import Dod_o
 from .dod.dod_h import Dod_h
 from .svuh import Svuh
 from .phys import Phys
+from .mass.mass_c1 import Mass_C1
+from .mass.mass_c3 import Mass_C3
