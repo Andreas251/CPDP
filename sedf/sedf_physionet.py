@@ -1,9 +1,9 @@
 import os
 
 from .base_sedf import Base_Sedf
+from abc import abstractmethod
 
-
-class Sedf_SC_PhysioNet(Base_Sedf):
+class Sedf_PhysioNet(Base_Sedf):
     """
     ABOUT THIS DATASET
     
@@ -17,14 +17,23 @@ class Sedf_SC_PhysioNet(Base_Sedf):
     
     EEG and EOG signals were each sampled at 100Hz.
     """ 
+    
+    @property
+    @abstractmethod
     def dataset_name(self):
-        return "sedf_sc"
+        pass
+    
+    @property
+    @abstractmethod
+    def read_psg(self, record):
+        pass
     
     
     def list_records(self, basepath):
         paths_dict = {}
         
         record_paths = os.listdir(basepath)
+
         psg_list = [s for s in record_paths if "PSG" in s]
         hyp_list = [s for s in record_paths if "Hypnogram" in s]
         
@@ -34,12 +43,18 @@ class Sedf_SC_PhysioNet(Base_Sedf):
             record_name = psg.split("-")[0]
             psg_path = f"{basepath}{psg}"
             
+            subject_id = record_name[3::4]
+            
             # Finding hypnogram matching PSG
             hyp_file_matches = [s for s in hyp_list if record_name[:6] in s]
             assert len(hyp_file_matches) == 1
             
             hyp_path = f"{basepath}{hyp_file_matches[0]}"
             
-            paths_dict[record_name] = [(psg_path, hyp_path)]
+            if subject_id in paths_dict.keys():
+                paths_dict[subject_id].append((psg_path, hyp_path))
+            else:
+                paths_dict[subject_id] = [(psg_path, hyp_path)]
         
+        print(paths_dict)
         return paths_dict
