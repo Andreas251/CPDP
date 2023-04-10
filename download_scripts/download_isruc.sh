@@ -7,6 +7,8 @@
 #	cd ..
 #done
 
+#!/bin/bash
+
 mkdir isruc
 cd isruc
 
