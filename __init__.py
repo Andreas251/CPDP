@@ -8,9 +8,11 @@ from .sdo.homepap import Homepap
 from .sdo.mros import Mros
 from .sdo.sof import Sof
 from .dcsm import Dcsm
-from .sedf.sedf_sc_usleep import Sedf_SC_USleep
-from .sedf.sedf_sc_physionet import Sedf_SC_PhysioNet
-from .isruc import Isruc
+from .sedf.sedf_sc import Sedf_SC_Physionet
+from .sedf.sedf_st import Sedf_ST_Physionet
+from .isruc.isruc_sg1 import Isruc_SG1
+from .isruc.isruc_sg2 import Isruc_SG2
+from .isruc.isruc_sg3 import Isruc_SG3
 from .dod.dod_o import Dod_o
 from .dod.dod_h import Dod_h
 from .svuh import Svuh

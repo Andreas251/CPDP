@@ -21,6 +21,7 @@ class Sedf_SC_USleep(Base_Sedf):
         return "sedf_sc"
     
     
+    # This is probably outdated, since its on record and not subject basis.
     def list_records(self, basepath):
         paths_dict = {}
         

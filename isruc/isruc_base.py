@@ -2,11 +2,13 @@ import os
 from h5py import File
 import scipy.io
 import numpy as np
+from abc import abstractmethod
 
-from .base import SleepdataPipeline
+import sys
+sys.path.append('../SleepDataPipeline')
+from SleepDataPipeline.base import SleepdataPipeline
 
-
-class Isruc(SleepdataPipeline):
+class Isruc_base(SleepdataPipeline):
     """
     ABOUT THIS DATASET 
     
@@ -15,9 +17,10 @@ class Isruc(SleepdataPipeline):
     def sample_rate(self):
         return 200
         
-        
+    @property
+    @abstractmethod    
     def dataset_name(self):
-        return "isruc"
+        pass
     
     
     def label_mapping(self):
@@ -42,7 +45,6 @@ class Isruc(SleepdataPipeline):
             "LOC_A2": self.Mapping(self.TTRef.EL, self.TTRef.RPA),
         }
     
-    
     def list_records(self, basepath):
         paths_dict = {}
         
@@ -53,9 +55,9 @@ class Isruc(SleepdataPipeline):
             if "ipynb_checkpoints" in path:
                 continue
             
-            recordpath = basepath+path+'/'+path
-            datapath = recordpath+".mat"
-            labelpath = recordpath+'_'+"1.txt"
+            recordpath = basepath+path+'/'
+            datapath = recordpath+"subject"+path+".mat"
+            labelpath = recordpath+path+'_'+"1.txt"
             
             paths_dict[path] = [(datapath, labelpath)]
         
