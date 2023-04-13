@@ -56,7 +56,9 @@ class Sedf_ST_Physionet(Sedf_PhysioNet):
             channel_data = data.get_data(channel)[0]
             chnl_len = len(channel_data)
             
-            assert abs(chnl_len-label_len) < 2, f"Diff was {abs(chnl_len-label_len)}"
+            if abs(chnl_len-label_len) > 2:
+                self.log_info(f"Diff was {abs(chnl_len-label_len)}")
+                return None
            
             x[channel] = (channel_data[0:label_len], sample_rate)
  

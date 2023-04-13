@@ -15,13 +15,13 @@ do
 		wget http://dataset.isr.uc.pt/ISRUC_Sleep/$1/$COUNT.rar
         	unrar e $COUNT.rar
         
-        	if [ "$1" == "subgroupII" ]
-        	then
+        	#if [ "$1" == "subgroupII" ]
+        	#then
             		wget http://dataset.isr.uc.pt/ISRUC_Sleep/ExtractedChannels/$1-Extractedchannels/1/subject$COUNT.mat
             		wget http://dataset.isr.uc.pt/ISRUC_Sleep/ExtractedChannels/$1-Extractedchannels/2/subject$COUNT.mat
-        	else
+        	#else
             		wget http://dataset.isr.uc.pt/ISRUC_Sleep/ExtractedChannels/$1-Extractedchannels/subject$COUNT.mat
-        	fi
+        	#fi
         
 		rm $COUNT.rar
         	rm $COUNT.rec

@@ -66,21 +66,25 @@ class Base_DOD(SleepdataPipeline):
 
         record = record[0]
         
-        with File(record, "r") as h5:
-            signals = h5.get("signals")
-            eeg_channels = signals.get("eeg")
-            eog_channels = signals.get("eog")
+        try:        
+            with File(record, "r") as h5:
+                signals = h5.get("signals")
+                eeg_channels = signals.get("eeg")
+                eog_channels = signals.get("eog")
             
-            channel_len = len(eeg_channels.get(list(eeg_channels.keys())[0]))
-            x_num_epochs = int(channel_len/self.sample_rate()/30)
+                channel_len = len(eeg_channels.get(list(eeg_channels.keys())[0]))
+                x_num_epochs = int(channel_len/self.sample_rate()/30)
                         
-            for channel in eeg_channels:
-                x[channel] = (eeg_channels.get(channel)[()], self.sample_rate())
-            for channel in eog_channels:
-                x[channel] = (eog_channels.get(channel)[()], self.sample_rate())
+                for channel in eeg_channels:
+                    x[channel] = (eeg_channels.get(channel)[()], self.sample_rate())
+                for channel in eog_channels:
+                    x[channel] = (eog_channels.get(channel)[()], self.sample_rate())
             
-            y = list(h5.get("hypnogram")[()])
+                y = list(h5.get("hypnogram")[()])
             
-            assert(len(y) == x_num_epochs), "Length of signal does not match the number of labels."
-        
+                assert(len(y) == x_num_epochs), "Length of signal does not match the number of labels."
+        except:
+            self.log_info("Could not read record", record=record)
+            return None
+
         return x, y

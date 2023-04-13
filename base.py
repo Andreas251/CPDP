@@ -42,6 +42,7 @@ class SleepdataPipeline(ABC):
             self.__check_paths(paths_dict)
             
             self.port_data(write_function=self.write_function, paths_dict=paths_dict)
+            self.log_info('Successfully ported dataset')
     
     
     class Mapping:
