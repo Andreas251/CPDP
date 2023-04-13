@@ -24,6 +24,7 @@ class SleepdataOrg(SleepdataPipeline):
             '3': self.Labels.N3,
             '4': self.Labels.N3,
             '5': self.Labels.REM,
+            '6': self.Labels.UNKNOWN,
             '9': self.Labels.UNKNOWN
         }
     

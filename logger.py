@@ -13,14 +13,16 @@ class EventSeverity(Enum):
 class LoggingModule:
     def __init__(self, logging_path):
         self.start_time = datetime.datetime.now() 
-        self.loggers = [CmdLogger(), TxtLogger(logging_path)]
-    
+        self.loggers = [CmdLogger()]
+
     def log(self, msg, dataset, subject, record, severity):
-        msg = 'Log [{sev}]: {msg}. [Dataset]={d} [Subject]={s} [Record]={r}'.format(sev=severity,
+        timestamp = datetime.datetime.now()
+
+        msg = 'Log [{sev}]: {msg}. [Dataset]={d} [Subject]={s} [Record]={r} [Time]={t}'.format(sev=severity,
                                                                                             msg=msg,
                                                                                            d = dataset,
                                                                                            s = subject,
-                                                                                           r = record)
+                                                                                           r = record, t = timestamp)
         
         for l in self.loggers:
             l.log_message(msg, dataset, severity, self.start_time)
@@ -34,7 +36,7 @@ class Logger(ABC):
 
 class CmdLogger(Logger):
     def log_message(self, msg, dataset, severity, run_index):
-        print(msg)
+        print(msg, flush=True)
     
 
 class TxtLogger(Logger):

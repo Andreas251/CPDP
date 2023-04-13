@@ -56,5 +56,5 @@ class Sedf_PhysioNet(Base_Sedf):
             else:
                 paths_dict[subject_id] = [(psg_path, hyp_path)]
         
-        print(paths_dict)
+        #print(paths_dict)
         return paths_dict

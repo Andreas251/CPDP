@@ -1,8 +1,1 @@
-./download_sdo.sh
-./download_dcsm.sh
-./download_isruc.sh
-./download_phys.sh
-./download_sdo.sh
-./download_sedf.sh
-./download_svuh.sh
-#gem install nsrr --no-document
+sbatch --time=$1 --job-name=Download_$2 --output=outputs/Download_$2.o%j --error=errors/Download_$2.e%j download_slurm.sh $3
