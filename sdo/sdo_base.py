@@ -10,7 +10,10 @@ from SleepDataPipeline.base import SleepdataPipeline
 
 class SleepdataOrg(SleepdataPipeline):
     """
-    ABOUT THIS
+    ABOUT THIS DATASET
+    
+    When transforming, the root directory should be containing only the folder "Polysomnography" from SleepData.Org
+    
     """
 
     def label_mapping(self): 
