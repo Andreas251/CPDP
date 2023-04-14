@@ -49,7 +49,10 @@ class SleepdataPipeline(ABC):
         def __init__(self, ref1, ref2):
             self.ref1 = ref1
             self.ref2 = ref2
-            
+        
+        def __eq__(self, other):
+            return (self.ref1, self.ref2) == (other.ref1, other.ref2)
+        
         def get_mapping(self):
             ctype = 'EOG' if self.ref1 in [SleepdataPipeline.TTRef.EL,
                                            SleepdataPipeline.TTRef.ER] else 'EEG'

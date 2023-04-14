@@ -139,9 +139,13 @@ class SleepdataOrg(SleepdataPipeline):
         
         assert len(x) > 0, "No data detected"
         
+        # Checking if the "not found channels" already has been mapped under another name
+        curr_mappings = [self.channel_mapping()[item] for item in x]
+        not_found_chnls = [item for item in not_found_chnls if self.channel_mapping()[item] not in curr_mappings]
+
         if len(not_found_chnls) > 0:
             self.log_warning('Did not find channels: {channels} was not found in the record. Possibilities are {present}'.format(channels=not_found_chnls,
-                                                                                                                                  present=data.ch_names),
+                                                                                                                                 present=data.ch_names),
                              record=path_to_psg)
             
         return x, y
