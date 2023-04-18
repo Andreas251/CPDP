@@ -27,6 +27,10 @@ def split_dataset(dataset,
         diff = test_len - max_test_len
         train_len += diff
         test_len = max_test_len
+
+    print(f"Number of train subjects: {train_len}")
+    print(f"Number of validation subjects: {val_len}")
+    print(f"Number of test subjects_ {test_len}")
     
     assert train_len + val_len + test_len == len(dataset)
     
@@ -59,8 +63,9 @@ def train_val_test_split(basepath, filename, train_ratio, val_ratio, test_ratio)
     print(filename)
     
     with h5py.File(basepath + filename, 'a') as file:
+        print("Opened: " + basepath+filename)
         subj_keys = list(file.keys())
-        print(subj_keys)
+        #print(subj_keys)
         
         train, val, test = split_dataset(subj_keys, train_ratio, val_ratio, test_ratio)
         
@@ -97,6 +102,6 @@ if __name__ == '__main__':
         train_val_test_split(bpath, file, train_ratio, val_ratio, test_ratio)    
 
         # Testing if keys are changed
-        with h5py.File(bpath + file, 'a') as f:
-            print(f.keys())
+        #with h5py.File(bpath + file, 'a') as f:
+        #    print(f.keys())
     
