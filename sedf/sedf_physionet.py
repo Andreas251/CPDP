@@ -43,7 +43,7 @@ class Sedf_PhysioNet(Base_Sedf):
             record_name = psg.split("-")[0]
             psg_path = f"{basepath}{psg}"
             
-            subject_id = record_name[3::4]
+            subject_id = record_name[:5]
             
             # Finding hypnogram matching PSG
             hyp_file_matches = [s for s in hyp_list if record_name[:6] in s]
