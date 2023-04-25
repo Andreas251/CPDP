@@ -1,6 +1,7 @@
 import h5py
 from sklearn.model_selection import train_test_split
 import argparse
+import os
 
 def split_dataset(dataset, 
                   train_ratio, 
@@ -62,6 +63,8 @@ def train_val_test_split(basepath, filename, train_ratio, val_ratio, test_ratio)
     print(basepath)
     print(filename)
     
+    assert os.path.exists(basepath+filename)
+
     with h5py.File(basepath + filename, 'a') as file:
         print("Opened: " + basepath+filename)
         subj_keys = list(file.keys())
@@ -88,20 +91,37 @@ if __name__ == '__main__':
       type=str,  # any type/callable can be used here
       default=[],
     )
+
+    CLI.add_argument(
+      "--train_ratio",
+      type=float
+    )
+
+    CLI.add_argument(
+      "--val_ratio",
+      type=float
+    )
+
+    CLI.add_argument(
+      "--test_ratio",
+      type=float
+    )
     
     args = CLI.parse_args()
     
     bpath = args.basepath
     filenames = args.files
 
-    for file in filenames:
-        train_ratio = 0.75
-        val_ratio = 0.10
-        test_ratio = 0.15
+    train_ratio = args.train_ratio
+    val_ratio = args.val_ratio
+    test_ratio = args.test_ratio
 
+    assert train_ratio+val_ratio+test_ratio == 1
+
+    for file in filenames:
         train_val_test_split(bpath, file, train_ratio, val_ratio, test_ratio)    
 
         # Testing if keys are changed
-        #with h5py.File(bpath + file, 'a') as f:
-        #    print(f.keys())
+        with h5py.File(bpath + file, 'a') as f:
+            print(f.keys())
     
