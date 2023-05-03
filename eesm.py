@@ -26,32 +26,17 @@ class Eesm(SleepdataPipeline):
     def dataset_name(self):
         return "eesm"
     
+    def left(self):
+        return ["ELA","ELB", "ELC", "ELT", "ELE", "ELI"]
+    
+    def right(self):
+        return ["ERA", "ERB", "ERC", "ERT", "ERE", "ERI" ]
+    
     def channel_mapping(self):
         return {
-            #"ELA": self.Mapping(self.TTRef.EL, self.TTRef.LPA),
-            #"ELB": self.Mapping(self.TTRef.EL, self.TTRef.LPA),
-            #"ELC": self.Mapping(self.TTRef.EL, self.TTRef.LPA),
-            #"ELT": self.Mapping(self.TTRef.EL, self.TTRef.LPA),
-            #"ELE": self.Mapping(self.TTRef.EL, self.TTRef.LPA),
-            #"ELI": self.Mapping(self.TTRef.EL, self.TTRef.LPA),
-            #"ERA": self.Mapping(self.TTRef.ER, self.TTRef.LPA),
-            #"ERB": self.Mapping(self.TTRef.ER, self.TTRef.LPA),
-            #"ERC": self.Mapping(self.TTRef.ER, self.TTRef.LPA),
-            #"ERT": self.Mapping(self.TTRef.ER, self.TTRef.LPA),
-            #"ERE": self.Mapping(self.TTRef.ER, self.TTRef.LPA),
-            #"ERI": self.Mapping(self.TTRef.ER, self.TTRef.LPA),
-            "EOGr": self.Mapping(self.TTRef.ER, self.TTRef.LPA),
-            "EOGl": self.Mapping(self.TTRef.EL, self.TTRef.LPA),
-            #"M1": self.Mapping(self.TTRef.M1, self.TTRef.LPA),
-            "F3": self.Mapping(self.TTRef.F3, self.TTRef.LPA),
-            "C3": self.Mapping(self.TTRef.C3, self.TTRef.LPA),
-            "O1": self.Mapping(self.TTRef.O1, self.TTRef.LPA),
-            #"M2": self.Mapping(self.TTRef.M2, self.TTRef.LPA),
-            "F4": self.Mapping(self.TTRef.F4, self.TTRef.LPA),
-            "C4": self.Mapping(self.TTRef.C4, self.TTRef.LPA),
-            "O2": self.Mapping(self.TTRef.O2, self.TTRef.LPA)
+            "EEG": self.Mapping(self.TTRef.CLE, self.TTRef.LPA),
+            "EOG": self.Mapping(self.TTRef.ER, self.TTRef.LPA),
         }
-    
     
     def list_records(self, basepath):
         paths_dict = {}
@@ -95,25 +80,26 @@ class Eesm(SleepdataPipeline):
         
         df = data.to_data_frame()
         
-        df = df.fillna(df.mean(), inplace=False)
+        # Get first 6 and next 6 channels
+        l = df[self.left()]
+        r = df[self.right()]
         
-        for channel in self.channel_mapping().keys():
-            try:
-                channel_data = df[channel]
-            except ValueError:
-                self.log_warning(f"Channel {channel} non-existing", subject="", record=psg_path)
-                continue
-                
-            nans = np.isnan(channel_data)
-            nans = [x for x in nans if x == True]
-            num_nans = len(nans)
-            
-            if num_nans > 0:
-                self.log_warning(f"Num nans are {num_nans}", subject="", record=psg_path)
-                return None
-            
-            channel_data = channel_data.values.tolist()
-            
-            x[channel] = (channel_data, sample_rate)
-
-        return x, y
+        # Mean the values for each side
+        l = l.mean(axis=1)
+        r = r.mean(axis=1)
+             
+        # Remove NANS
+        l = l.fillna(0, inplace=False)
+        r = r.fillna(0, inplace=False)
+        
+        # Subtract and create a "fake" eog channel
+        eeg = l-r
+        eog = eeg.copy(deep=True)
+        
+        eeg = eeg.values.tolist()
+        eog = eog.values.tolist()
+        
+        x["EEG"] = (eeg, sample_rate)
+        x["EOG"] = (eog, sample_rate)
+        
+        return x,y
