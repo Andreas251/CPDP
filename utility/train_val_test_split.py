@@ -86,6 +86,7 @@ def train_val_test_split(basepath, filename, train_ratio, val_ratio, test_ratio,
         
     
 if __name__ == '__main__':
+    print("Hello from split")
     CLI=argparse.ArgumentParser()
     
     CLI.add_argument(
@@ -102,17 +103,20 @@ if __name__ == '__main__':
 
     CLI.add_argument(
       "--train_ratio",
-      type=float
+      type=float,
+      default=0.75
     )
 
     CLI.add_argument(
       "--val_ratio",
-      type=float
+      type=float,
+      default=0.10
     )
 
     CLI.add_argument(
       "--test_ratio",
-      type=float
+      type=float,
+      default=0.15
     )
     
     CLI.add_argument(
