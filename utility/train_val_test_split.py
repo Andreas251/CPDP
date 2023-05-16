@@ -49,32 +49,40 @@ def rename_keys(file, groups, split_type):
         
         file.move(key, new_key)
         
+    
+def remove_keys(file):
+    print("Removing prefixes...")
+    print(f"Before: {file.keys()}")
+    subj_keys = file.keys()
+    for key in subj_keys:
+        new_key = key.split("_")[-1]
+        file.move(key, new_key)        
         
-def train_val_test_split(basepath, filename, train_ratio, val_ratio, test_ratio):
+        
+def train_val_test_split(basepath, filename, train_ratio, val_ratio, test_ratio, remove_prefix):
     """
-    Function to split a single tranformed hdf5 dataset into train, validation and test datasets by tagging them in subject group name:
+    Function to split a single transformed hdf5 dataset into train, validation and test datasets by tagging them in subject group name:
     
     {split_type}_{subject_id}
     
     E.g. train_800002
     
     # TODO: Currently split by number of subjects, but subjects can have different number of records. In future we might want to count number of records for each subject and split based on that.
-    """
-    print(basepath)
-    print(filename)
-    
-    assert os.path.exists(basepath+filename)
+    """    
+    assert os.path.exists(basepath+filename), f"{basepath+filename} does not exist..."
 
     with h5py.File(basepath + filename, 'a') as file:
         print("Opened: " + basepath+filename)
         subj_keys = list(file.keys())
-        #print(subj_keys)
         
-        train, val, test = split_dataset(subj_keys, train_ratio, val_ratio, test_ratio)
-        
-        rename_keys(file, train, "train")
-        rename_keys(file, val, "val")
-        rename_keys(file, test, "test")
+        if remove_prefix:
+            remove_keys(file)
+        else:
+            train, val, test = split_dataset(subj_keys, train_ratio, val_ratio, test_ratio)
+
+            rename_keys(file, train, "train")
+            rename_keys(file, val, "val")
+            rename_keys(file, test, "test")
         
     
 if __name__ == '__main__':
@@ -107,6 +115,12 @@ if __name__ == '__main__':
       type=float
     )
     
+    CLI.add_argument(
+        "--remove_prefix",
+        type=bool,
+        default=False
+    )
+    
     args = CLI.parse_args()
     
     bpath = args.basepath
@@ -117,11 +131,13 @@ if __name__ == '__main__':
     test_ratio = args.test_ratio
 
     assert train_ratio+val_ratio+test_ratio == 1
+    
+    remove_prefix = args.remove_prefix
 
     for file in filenames:
-        train_val_test_split(bpath, file, train_ratio, val_ratio, test_ratio)    
+        train_val_test_split(bpath, file, train_ratio, val_ratio, test_ratio, remove_prefix)    
 
         # Testing if keys are changed
         with h5py.File(bpath + file, 'a') as f:
-            print(f.keys())
+            print(f"After: {f.keys()}")
     
