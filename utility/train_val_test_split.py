@@ -112,10 +112,10 @@ if __name__ == '__main__':
     CLI.add_argument("--files", nargs="*", type=str,  default=[]) # any type/callable can be used here
     CLI.add_argument("--train_ratio", type=float, default=0.75)
     CLI.add_argument("--val_ratio", type=float, default=0.10)
-    CLI.add_argument("--test_ratio", type=float, default=0.15)    
-    CLI.add_argument("--generate_config_file", type=bool, default=True)
-    CLI.add_argument("--rename_keys", type=bool, default=False)    
-    CLI.add_argument("--remove_prefix", type=bool, default=False)
+    CLI.add_argument("--test_ratio", type=float, default=0.15)      
+    CLI.add_argument('--generate_config_file', action='store_true')
+    CLI.add_argument('--rename_keys', action='store_true')
+    CLI.add_argument("--remove_prefix", action='store_true')
     args = CLI.parse_args()
     
     bpath = args.basepath
