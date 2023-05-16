@@ -2,6 +2,7 @@ import h5py
 from sklearn.model_selection import train_test_split
 import argparse
 import os
+import json
 
 def split_dataset(dataset, 
                   train_ratio, 
@@ -83,52 +84,43 @@ def train_val_test_split(basepath, filename, train_ratio, val_ratio, test_ratio,
             rename_keys(file, train, "train")
             rename_keys(file, val, "val")
             rename_keys(file, test, "test")
-        
+
+def generate_config_file(basepath, filenames, train_ratio, val_ratio, test_ratio):
+    data = {}
+    
+    for filename in filenames:
+        with h5py.File(basepath + filename, 'a') as file:
+            print("Opened: " + basepath+filename)
+            subj_keys = list(file.keys())
+            train, val, test = split_dataset(subj_keys, train_ratio, val_ratio, test_ratio)
+            data[filename] = {
+                    "train": train,
+                    "val": val,
+                    "test": test
+                }
+    
+    with open(basepath + 'split_config.json', 'w') as f:
+        json.dump(data, f)
+        print("=======================================================")
+        print(f"JSON config saved to: {basepath + 'split_config.json'}")
+        print("=======================================================")
+    
     
 if __name__ == '__main__':
-    print("Hello from split")
     CLI=argparse.ArgumentParser()
-    
-    CLI.add_argument(
-      "--basepath",
-      type=str
-    )
-    
-    CLI.add_argument(
-      "--files",
-      nargs="*",
-      type=str,  # any type/callable can be used here
-      default=[],
-    )
-
-    CLI.add_argument(
-      "--train_ratio",
-      type=float,
-      default=0.75
-    )
-
-    CLI.add_argument(
-      "--val_ratio",
-      type=float,
-      default=0.10
-    )
-
-    CLI.add_argument(
-      "--test_ratio",
-      type=float,
-      default=0.15
-    )
-    
-    CLI.add_argument(
-        "--remove_prefix",
-        type=bool,
-        default=False
-    )
-    
+    CLI.add_argument("--basepath", type=str)
+    CLI.add_argument("--files", nargs="*", type=str,  default=[]) # any type/callable can be used here
+    CLI.add_argument("--train_ratio", type=float, default=0.75)
+    CLI.add_argument("--val_ratio", type=float, default=0.10)
+    CLI.add_argument("--test_ratio", type=float, default=0.15)    
+    CLI.add_argument("--generate_config_file", type=bool, default=True)
+    CLI.add_argument("--rename_keys", type=bool, default=False)    
+    CLI.add_argument("--remove_prefix", type=bool, default=False)
     args = CLI.parse_args()
     
     bpath = args.basepath
     filenames = args.files
+    remove_prefix = args.remove_prefix
 
     train_ratio = args.train_ratio
     val_ratio = args.val_ratio
@@ -136,12 +128,16 @@ if __name__ == '__main__':
 
     assert train_ratio+val_ratio+test_ratio == 1
     
-    remove_prefix = args.remove_prefix
+    if args.generate_config_file:
+        print("Generating config file...")
+        generate_config_file(args.basepath, args.files, args.train_ratio, args.val_ratio, args.test_ratio)
+        
+    elif args.rename_keys:
+        print("Renaming keys...")
+        for file in filenames:
+            train_val_test_split(bpath, file, train_ratio, val_ratio, test_ratio, remove_prefix)    
 
-    for file in filenames:
-        train_val_test_split(bpath, file, train_ratio, val_ratio, test_ratio, remove_prefix)    
-
-        # Testing if keys are changed
-        with h5py.File(bpath + file, 'a') as f:
-            print(f"After: {f.keys()}")
+            # Testing if keys are changed
+            with h5py.File(bpath + file, 'a') as f:
+                print(f"After: {f.keys()}")
     
