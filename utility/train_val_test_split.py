@@ -112,7 +112,8 @@ if __name__ == '__main__':
     CLI.add_argument("--files", nargs="*", type=str,  default=[]) # any type/callable can be used here
     CLI.add_argument("--train_ratio", type=float, default=0.75)
     CLI.add_argument("--val_ratio", type=float, default=0.10)
-    CLI.add_argument("--test_ratio", type=float, default=0.15)      
+    CLI.add_argument("--test_ratio", type=float, default=0.15)    
+    CLI.add_argument("--list_subjects", action='store_true')  
     CLI.add_argument('--generate_config_file', action='store_true')
     CLI.add_argument('--rename_keys', action='store_true')
     CLI.add_argument("--remove_prefix", action='store_true')
@@ -128,7 +129,14 @@ if __name__ == '__main__':
 
     assert train_ratio+val_ratio+test_ratio == 1
     
-    if args.generate_config_file:
+
+    if args.list_subjects:
+        for file in filenames:
+            # Listing keys for each file
+            with h5py.File(bpath + file, 'a') as f:
+                print(f"{file} subject keys: {f.keys()}")
+
+    elif args.generate_config_file:
         print("Generating config file...")
         generate_config_file(args.basepath, args.files, args.train_ratio, args.val_ratio, args.test_ratio)
         
@@ -140,4 +148,6 @@ if __name__ == '__main__':
             # Testing if keys are changed
             with h5py.File(bpath + file, 'a') as f:
                 print(f"After: {f.keys()}")
+    
+    
     
