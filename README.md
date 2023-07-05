@@ -1,9 +1,22 @@
 # SleepDataPipeline
 
-This repository can be used to transform raw PSG data to a standardized HDF5 file.
+This repository can be used to transform most PSG datasets to a standardized HDF5 file.
 
-For example, ABC can be transformed by executing:
+Configuration is specified in conf.yaml - the below example transforms EESM:
 
-d = SleepDataPipeline.Abc(None, raw data directory, target directory)
+parameters:
+ scale_and_clip: True
+ output_sample_rate: 128
+target_path:
+ "/my/target/output/path"
+datasets:
+ - name: Eesm
+   path: "/path/to/eesm/data/"
 
-"None" can be changed to a number, indicating how many number of subjects is needed, if one needs a proof-of-concept or test dataset.
+Datasets is a list, so multiple datasets can be transformed in the same execution.
+
+
+# Available datasets
+Available datasets and their correct datapath:
+
+ABC

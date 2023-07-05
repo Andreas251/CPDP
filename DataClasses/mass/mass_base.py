@@ -10,8 +10,8 @@ import math
 from abc import abstractmethod
 
 import sys
-sys.path.append('../SleepDataPipeline')
-from SleepDataPipeline.base import SleepdataPipeline
+sys.path.append('../DataClasses')
+from DataClasses.base import SleepdataPipeline
 
 class Mass_base(SleepdataPipeline):
     """

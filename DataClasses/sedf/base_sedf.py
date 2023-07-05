@@ -2,8 +2,8 @@ import mne
 from abc import abstractmethod
 
 import sys
-sys.path.append('../SleepDataPipeline')
-from SleepDataPipeline.base import SleepdataPipeline
+sys.path.append('../DataClasses')
+from DataClasses.base import SleepdataPipeline
 
 
 class Base_Sedf(SleepdataPipeline):

@@ -16,8 +16,9 @@ class SleepdataPipeline(ABC):
         self, 
         max_num_subjects, 
         dataset_path, 
-        output_path, 
-        port_on_init=True, 
+        output_path,
+        scale_and_clip,
+        output_sample_rate,
         data_format="hdf5",
         logging_path = "./SleepDataPipeline/logs"
     ):
@@ -25,6 +26,8 @@ class SleepdataPipeline(ABC):
         self.dataset_path = dataset_path
         self.output_path = output_path
         self.logger = LoggingModule(logging_path)
+        self.scale_and_clip = scale_and_clip
+        self.output_sample_rate = output_sample_rate
         
         if data_format == "hdf5":
             self.write_function = self.write_record_to_database_hdf5
@@ -34,15 +37,14 @@ class SleepdataPipeline(ABC):
             self.log_error("Invalid data format. Must be one of [hdf5, parquet].")
             exit(1)
         
-        if port_on_init:
-            assert os.path.exists(self.dataset_path), f"Path {self.dataset_path} does not exist"
-            
-            paths_dict = self.list_records(basepath=self.dataset_path)
-            
-            self.__check_paths(paths_dict)
-            
-            self.port_data(write_function=self.write_function, paths_dict=paths_dict)
-            self.log_info('Successfully ported dataset')
+        assert os.path.exists(self.dataset_path), f"Path {self.dataset_path} does not exist"
+
+        paths_dict = self.list_records(basepath=self.dataset_path)
+
+        self.__check_paths(paths_dict)
+
+        self.port_data(write_function=self.write_function, paths_dict=paths_dict)
+        self.log_info('Successfully ported dataset')
     
     
     class Mapping:
@@ -247,12 +249,13 @@ class SleepdataPipeline(ABC):
             data, sample_rate = dic[key]
             
             assert len(data) == y_len*sample_rate*30, "Length of data does not match the length of labels"
-
-            data = self.scale_channel(data)
-            data = self.clip_channel(data)
+            
+            if self.scale_and_clip:
+                data = self.scale_channel(data)
+                data = self.clip_channel(data)
 
             new_dict[new_key] = self.resample_channel(data,
-                                                      output_rate=128,
+                                                      output_rate=self.output_sample_rate,
                                                       source_sample_rate=sample_rate) # TODO: Test that resampling works
             
         return new_dict
@@ -288,8 +291,6 @@ class SleepdataPipeline(ABC):
     def resample_channel(self, channel, output_rate, source_sample_rate):
         """
         Function to resample a single data channel to the desired sample rate.
-        
-        Default output rate = 128 Hz
         """
 
         channel_resampled = resample_poly(
@@ -339,7 +340,7 @@ class SleepdataPipeline(ABC):
             self.log_info('Successfully wrote record to hdf5 file', subject_number, record_number)
         
         
-    def port_data(self, write_function, paths_dict): # TODO: Test
+    def port_data(self, write_function, paths_dict):
         
         file_path = f"{self.output_path}/{self.dataset_name()}.hdf5"
         exists = os.path.exists(file_path)

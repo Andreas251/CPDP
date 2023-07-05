@@ -5,8 +5,8 @@ from abc import ABC, abstractmethod
 import warnings
 
 import sys
-sys.path.append('../SleepDataPipeline')
-from SleepDataPipeline.base import SleepdataPipeline
+sys.path.append('../DataClasses')
+from DataClasses.base import SleepdataPipeline
 
 class SleepdataOrg(SleepdataPipeline):
     """

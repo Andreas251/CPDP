@@ -3,8 +3,8 @@ from h5py import File
 from abc import abstractmethod
 
 import sys
-sys.path.append('../SleepDataPipeline')
-from SleepDataPipeline.base import SleepdataPipeline
+sys.path.append('../DataClasses')
+from DataClasses.base import SleepdataPipeline
 
 
 class Base_DOD(SleepdataPipeline):
@@ -65,7 +65,7 @@ class Base_DOD(SleepdataPipeline):
         x = dict()
 
         record = record[0]
-        print(record)
+        
         try:        
             with File(record, "r") as h5:
                 signals = h5.get("signals")

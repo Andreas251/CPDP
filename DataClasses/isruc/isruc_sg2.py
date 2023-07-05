@@ -25,7 +25,6 @@ class Isruc_SG2(Isruc_base):
         record_paths = os.listdir(basepath)
 
         for path in record_paths:
-            # Fucking ugly and hacky, delete ASAP
             if "ipynb_checkpoints" in path:
                 continue
 
