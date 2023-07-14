@@ -5,7 +5,7 @@ import sys
 from .sdo_base import SleepdataOrg
 
 
-class Chat(SleepdataOrg):
+class CHAT(SleepdataOrg):
     """
     ABOUT THIS DATASET 
     

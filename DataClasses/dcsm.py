@@ -4,7 +4,7 @@ from h5py import File
 from .base import SleepdataPipeline
 
 
-class Dcsm(SleepdataPipeline):
+class DCSM(SleepdataPipeline):
     """
     ABOUT THIS DATASET 
     

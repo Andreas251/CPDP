@@ -3,7 +3,7 @@ import xml.etree.ElementTree as ET
 
 from .sdo_base import SleepdataOrg
 
-class Abc(SleepdataOrg):
+class ABC(SleepdataOrg):
     """
     ABOUT THIS DATASET 
     

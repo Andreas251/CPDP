@@ -9,7 +9,7 @@ import math
 
 from .isruc_base import Isruc_base
 
-class Isruc_SG3(Isruc_base):
+class ISRUC_SG3(Isruc_base):
     """
     ABOUT THIS DATASET 
     

@@ -1,6 +1,6 @@
 from .sdo_base import SleepdataOrg
 
-class Sof(SleepdataOrg):
+class SOF(SleepdataOrg):
 
     def channel_mapping(self):
         return {

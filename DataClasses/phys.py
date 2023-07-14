@@ -10,7 +10,7 @@ import torch
 from .base import SleepdataPipeline
 
 
-class Phys(SleepdataPipeline):
+class PHYS(SleepdataPipeline):
 
     def label_mapping(self):
         return {

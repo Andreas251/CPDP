@@ -7,7 +7,7 @@ import mne
 
 from .base import SleepdataPipeline
 
-class Svuh(SleepdataPipeline):
+class SVUH(SleepdataPipeline):
     """
     ABOUT THIS DATASET 
     

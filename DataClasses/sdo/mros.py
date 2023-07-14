@@ -1,6 +1,6 @@
 from .sdo_base import SleepdataOrg
 
-class Mros(SleepdataOrg):    
+class MROS(SleepdataOrg):    
     def channel_mapping(self):
         return {
             "C3": self.Mapping(self.TTRef.C3, self.TTRef.Fpz),

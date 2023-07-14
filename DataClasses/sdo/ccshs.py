@@ -5,7 +5,7 @@ import sys
 from .sdo_base import SleepdataOrg
 
 
-class Ccshs(SleepdataOrg):
+class CCSHS(SleepdataOrg):
     """
     ABOUT THIS DATASET 
     

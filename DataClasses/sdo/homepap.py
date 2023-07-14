@@ -1,6 +1,6 @@
 from .sdo_base import SleepdataOrg
 
-class Homepap(SleepdataOrg):
+class HOMEPAP(SleepdataOrg):
 
     def channel_mapping(self):
         return {

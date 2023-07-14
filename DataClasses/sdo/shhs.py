@@ -1,6 +1,6 @@
 from .sdo_base import SleepdataOrg
 
-class Shhs(SleepdataOrg):
+class SHHS(SleepdataOrg):
 
     def channel_mapping(self):
         return {

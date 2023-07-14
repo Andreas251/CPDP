@@ -6,7 +6,7 @@ import pandas as pd
 import mne
 import numpy as np
 
-class Eesm(SleepdataPipeline):
+class EESM(SleepdataPipeline):
     """
     ABOUT THIS DATASET 
     """

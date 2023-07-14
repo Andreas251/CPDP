@@ -3,9 +3,9 @@ import os
 from .sedf_physionet import Sedf_PhysioNet
 import mne
 
-class Sedf_ST_Physionet(Sedf_PhysioNet):
+class SEDF_ST(Sedf_PhysioNet):
     def dataset_name(self):
-        return "sedf_st_physionet"
+        return "sedf_st"
     
     def read_psg(self, record):
         psg_path, hyp_path = record    

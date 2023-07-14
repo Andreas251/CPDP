@@ -1,6 +1,6 @@
 from .sdo_base import SleepdataOrg
 
-class Mesa(SleepdataOrg):    
+class MESA(SleepdataOrg):    
 
     def channel_mapping(self):
         return {

@@ -2,7 +2,7 @@ from .sdo_base import SleepdataOrg
 
 # Does not work at the moment because of different samplerates across records.
 
-class Cfs(SleepdataOrg):
+class CFS(SleepdataOrg):
     def channel_mapping(self):
         return {
             "C3": self.Mapping(self.TTRef.C3, self.TTRef.Fpz),
