@@ -88,3 +88,13 @@ The data can be found here: http://ceams-carsm.ca/en/MASS/
 Only SS1 and SS3 are available for transformation.
 <br></br>
 - TODO: Rewrite transformer logic, so it can deal with data from the source.
+
+# How to use the pipeline
+
+1. Edit the "args.yaml" file to the desired configuration.
+
+2. Run "python train.py" to train a model with the configuration from the yaml file.
+
+3. Run "python test.py" to test an existing model with the configuration from the yaml file. This creates result files in the results folder.
+
+4. Run "python report.py --run_id--" to get a report of the results for the given run id. --run_id-- should match the appropriate foldername inside the results folder.

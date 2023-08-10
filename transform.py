@@ -7,7 +7,7 @@ def main():
     target = "/home/alec/repos/data/hdf5"
     num_sub = None
     
-    with open('conf.yaml') as f:
+    with open('preprocessing_args.yaml') as f:
         data = yaml.load(f, Loader=SafeLoader)
         datasets = data['datasets']
         target = data['target_path']
