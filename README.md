@@ -1,8 +1,12 @@
 # CSDP - Common Sleep Data pipeline
 
-This repository can be used to transform most avaiable PSG datasets to a standardized HDF5 file.
+This repository contains a pipeline for training neural networks to perform automatic sleep staging.
 
-The repository can also be used to train two neural networks with customizable training setups.
+It is two part and consists of: data preprocessing/standardization and data serving.
+
+The preprocessing can be used to transform most avaiable PSG datasets to a standardized HDF5 file.
+
+The data serving can be used for two neural networks with customizable training setups.
 
 ## How to preprocess and standardize your data
 
